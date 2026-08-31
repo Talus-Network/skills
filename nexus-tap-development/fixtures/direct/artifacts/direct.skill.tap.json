@@ -1,0 +1,17 @@
+{
+  "name": "direct-fixture",
+  "dag_path": "direct.dag.json",
+  "requirements": {
+    "input_commitment": [1, 2, 3],
+    "payment_policy": "UserFunded",
+    "schedule_policy": "Once",
+    "fixed_tools": [
+      {
+        "tool_registry_id": {"bytes": "0x1"},
+        "tool_fqn": {"bytes": [100, 105, 114, 101, 99, 116, 46, 102, 105, 120, 116, 117, 114, 101, 46, 101, 120, 101, 99, 117, 116, 101, 64, 49]}
+      }
+    ],
+    "shared_objects": []
+  },
+  "interface_revision": {"inner": 1}
+}

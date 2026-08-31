@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "fixture": "delayed",
+  "package": "delayed_fixture",
+  "dependency_template": "dependency-template.json",
+  "rewrite_provenance": "dependency-template.json",
+  "source_module": "delayed",
+  "test_module": "delayed",
+  "success_tests": [
+    "delayed_path_keeps_scheduled_input_until_follow_up",
+    "delayed_path_has_distinct_follow_up_result"
+  ],
+  "expected_failure_tests": [
+    {"name": "delayed_schedule_rejects_input_above_limit", "abort_code": 0, "branch": "schedule input > 99"},
+    {"name": "delayed_execute_rejects_invalid_scheduled_state", "abort_code": 1, "branch": "tampered scheduled state > 99"}
+  ],
+  "test_counts": {"success": 2, "expected_failure": 2, "total": 4}
+}

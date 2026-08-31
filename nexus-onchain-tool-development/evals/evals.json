@@ -1,0 +1,71 @@
+{
+  "skill_name": "nexus-onchain-tool-development",
+  "source_constraint": "Use the six reviewed public Move Registry packages for network-facing Nexus Move dependencies, the three approved anonymous public repositories (Nexus SDK, Nexus Move Packages, and the pinned Sui framework source) for schemas/offline closure, repository-owned Move fixtures for local tests, and explicit read-only Sui testnet evidence for deployed observations. Do not use private repositories, host source trees, or network mutations.",
+  "evals": [
+    {
+      "id": "onchain-tool-contract",
+      "prompt": "Build a Sui Move Tool with a public execute ABI, state witness, authorization/input commitment check, typed output on every branch, and finalization. Prepare the public Move package closure, run local tests, and validate the generated artifacts.",
+      "sources": [
+        "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages",
+        "https://www.moveregistry.com/package/@talus/nexus-primitives",
+        "https://www.moveregistry.com/package/@talus/nexus-interface",
+        "https://github.com/Talus-Network/nexus-sdk/tree/main/cli/src/tool",
+        "https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages"
+      ],
+      "expected_output": "A disposable consumer package, dependency provenance, pure tests, build/validator evidence, and a clearly gated mutation plan.",
+      "expectations": [
+        "The consumer manifest uses only copied public package paths and preserves required metadata.",
+        "Authorization, witness, recipient, commitment, output, and finalization order are tested.",
+        "Offline validator output is not presented as native execution or registration proof."
+      ]
+    },
+    {
+      "id": "onchain-testnet-read",
+      "prompt": "Inspect an already deployed Move Tool package and module through the bundled read-only evidence helper at https://graphql.testnet.sui.io/graphql. Report the chain identity, checkpoint, normalized module shape, and any missing evidence.",
+      "sources": [
+        "bundled:scripts/testnet_evidence.py",
+        "https://github.com/Talus-Network/nexus-move-packages/blob/main/README.md",
+        "https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages"
+      ],
+      "expected_output": "A JSON evidence report with endpoint, network, methods, response digests, and an explicit read-only limitation statement.",
+      "expectations": [
+        "The helper requires a package identifier for module reads and rejects malformed identifiers.",
+        "No wallet, environment switch, signing, publication, registration, or transaction is attempted.",
+        "Endpoint errors and unsupported GraphQL queries fail closed."
+      ]
+    },
+    {
+      "id": "onchain-grill-ambiguous",
+      "prompt": "Build an on-chain Move Tool that changes some state and emits a result. Start from this incomplete request.",
+      "sources": [
+        "bundled:references/workflow.md",
+        "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages",
+        "https://www.moveregistry.com/package/@talus/nexus-interface"
+      ],
+      "expected_output": "Exactly one recommended material question and a no-action stop until the ABI, state/authorization requirements, scope, mutation boundary, acceptance evidence, and compact design are shared.",
+      "expectations": [
+        "The agent asks one unresolved material question at a time and includes a recommended answer with its reason.",
+        "The agent does not scaffold Move files, acquire sources, build, test, generate artifacts, write, publish, or register before the contract and design are explicit.",
+        "Facts answerable from the approved public Move package or Sui sources are resolved read-only rather than turned into unnecessary user questions."
+      ]
+    },
+    {
+      "id": "onchain-grill-fully-specified",
+      "prompt": "Build a Sui Move Tool named weather.lookup@1. Goal: expose a public execute ABI that reads a package-owned WeatherState and produces one TaggedOutput. Requirements: place the framework-owned prefix before application inputs and end with &mut TxContext; consume the supplied authorization against the exact recipient, state UID, and input commitment before changing state; finalize one output on every branch. Inputs: a WeatherState object, public authorization/result interfaces, and operator-supplied placeholder IDs. In scope: the consumer Move package, manifest, artifact summary, pure application tests, and structural validators. Non-goals: publication, registration, binding, scheduling, asset movement, or invented deployment IDs. Authorization: local files/build/test are authorized; only read-only official Testnet GraphQL observations are allowed; no wallet, environment switch, signing, or shared-network mutation is authorized. Acceptance: ABI/order, witness/recipient/commitment, output/finalization, malformed-input, pure tests, manifest closure, and artifact validation. Design: inspect the public interface contract, write the smallest package, then run isolated local tests and validators. Use approved public sources and do not ask a redundant question.",
+      "sources": [
+        "bundled:references/workflow.md",
+        "bundled:references/source-map.md",
+        "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages",
+        "https://www.moveregistry.com/package/@talus/nexus-primitives",
+        "https://www.moveregistry.com/package/@talus/nexus-interface",
+        "https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages"
+      ],
+      "expected_output": "A recorded complete contract and compact design followed by the isolated Move implementation/test/validation workflow, with no redundant question and no deployment mutation.",
+      "expectations": [
+        "The complete goal, requirements, inputs/boundary, scope, non-goals, authorization, acceptance evidence, and design are recorded before development actions.",
+        "No material clarification question is asked because the request already specifies the contract; public-source facts are resolved from approved sources.",
+        "The resulting package/tests preserve authorization, witness, commitment, output, finalization, artifact, and read-only Testnet boundaries."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "delayed-fixture",
+  "dag_path": "delayed.dag.json",
+  "requirements": {
+    "input_commitment": [4, 5, 6],
+    "payment_policy": "UserFunded",
+    "schedule_policy": "Delayed",
+    "fixed_tools": [
+      {
+        "tool_registry_id": {"bytes": "0x2"},
+        "tool_fqn": {"bytes": [100, 101, 108, 97, 121, 101, 100, 46, 102, 105, 120, 116, 117, 114, 101, 46, 115, 99, 104, 101, 100, 117, 108, 101, 64, 49]}
+      },
+      {
+        "tool_registry_id": {"bytes": "0x3"},
+        "tool_fqn": {"bytes": [100, 101, 108, 97, 121, 101, 100, 46, 102, 105, 120, 116, 117, 114, 101, 46, 101, 120, 101, 99, 117, 116, 101, 64, 49]}
+      }
+    ],
+    "shared_objects": []
+  },
+  "interface_revision": {"inner": 1}
+}

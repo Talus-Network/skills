@@ -1,0 +1,36 @@
+{
+  "skill_name": "nexus-onchain-task-debugging",
+  "source_constraint": "Use bundled diagnosis guidance, the three approved anonymous public repositories (Nexus SDK, Nexus Move Packages, and the pinned Sui framework source), repository-owned fixtures, and explicit read-only Sui testnet evidence. Do not use external documentation authorities, unbundled sources, credentials, wallets, or mutations.",
+  "evals": [
+    {
+      "id": "pending-payment-diagnosis",
+      "prompt": "Diagnose a pending Execution with a retained result and a payment shortfall. Read Task, Occurrence, Execution, Invocation/result, and payment evidence in order and separate authorization, committed result, reserve, ExecutionPayment, Tool charge, refund, and gas.",
+      "sources": [
+        "https://github.com/Talus-Network/nexus-sdk/tree/main/sdk/src",
+        "https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages"
+      ],
+      "expected_output": "A diagnosis table with exact identities and evidence classes, the earliest missing/conflicting read, and a safe next-read plan.",
+      "expectations": [
+        "The report does not infer a relationship from a name, FQN, timestamp, or payment ID alone.",
+        "It distinguishes read-only diagnosis from refill, settlement, abort, close, retry, or scheduling mutations.",
+        "It records checkpoint/transaction provenance and response digests when available."
+      ]
+    },
+    {
+      "id": "task-testnet-observation",
+      "prompt": "Collect public package, module, and object observations for a Task diagnosis from https://graphql.testnet.sui.io/graphql. Reject unsupported methods, malformed responses, non-testnet endpoints, and missing identifiers before interpreting state.",
+      "sources": [
+        "bundled:scripts/testnet_evidence.py",
+        "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages",
+        "bundled:scripts/testnet_evidence.py",
+        "https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages"
+      ],
+      "expected_output": "A bounded read-only testnet report or a concrete unavailable-evidence failure; no state-changing fallback.",
+      "expectations": [
+        "The endpoint and network identity are explicit in the report.",
+        "Only allowlisted read-only GraphQL queries are sent for the shown GraphQL endpoint.",
+        "The report states that public-state evidence does not prove execution or settlement."
+      ]
+    }
+  ]
+}

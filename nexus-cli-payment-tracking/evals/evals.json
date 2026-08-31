@@ -1,0 +1,36 @@
+{
+  "skill_name": "nexus-cli-payment-tracking",
+  "source_constraint": "Use the bundled ledger guidance, the three approved anonymous public repositories (Nexus SDK, Nexus Move Packages, and the pinned Sui framework source), and explicit read-only Sui testnet evidence. Never depend on an unbundled external source, wallet, credentials, or a state-changing command.",
+  "evals": [
+    {
+      "id": "payment-read-trace",
+      "prompt": "Trace a user-funded Task whose Occurrence has an ExecutionPayment. Identify the exact Task, Occurrence, Execution, payment source, budget, locks, charges, and final state using read-only CLI/object reads and the explicit testnet evidence helper.",
+      "sources": [
+        "https://github.com/Talus-Network/nexus-sdk/tree/main/cli/src/task",
+        "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages",
+        "https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages"
+      ],
+      "expected_output": "A ledger with exact identifiers, owners, versions, digests, payment relationships, evidence classes, and the earliest missing field if a read is unavailable.",
+      "expectations": [
+        "The report keeps Task reserve, ExecutionPayment, Tool charge, priority fee, and SUI gas separate.",
+        "Every observed relationship is backed by a read response, event/effect, checkpoint, or response digest.",
+        "No refill, settlement, collection, retry, or other mutation is run."
+      ]
+    },
+    {
+      "id": "payment-testnet-boundary",
+      "prompt": "Use an explicit https://graphql.testnet.sui.io/graphql endpoint to inspect public package/module/object evidence for a payment investigation. Handle timeout, malformed JSON, wrong network, and incomplete object responses safely.",
+      "sources": [
+        "bundled:scripts/testnet_evidence.py",
+        "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages",
+        "https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages"
+      ],
+      "expected_output": "A read-only testnet evidence report with endpoint, network label, allowlisted methods, response digests, and an explicit unavailable/conflicting status when proof is incomplete.",
+      "expectations": [
+        "The helper requires the endpoint explicitly and does not inspect wallet or environment configuration.",
+        "Only package/module/object/network-identity reads are used.",
+        "A read-only response is not described as execution or settlement proof."
+      ]
+    }
+  ]
+}

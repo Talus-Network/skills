@@ -1,0 +1,64 @@
+{
+  "skill_name": "nexus-offchain-tool-development",
+  "source_constraint": "Ground version-sensitive Tool names in the anonymous public Nexus SDK archive prepared by the bundled helper and use the three approved public repositories (Nexus SDK, Nexus Move Packages, and the pinned Sui framework source) plus repository-owned guidance. Use repository-owned fixtures and deterministic mocks; use Sui testnet only for explicit read-only package/module/object evidence.",
+  "evals": [
+    {
+      "id": "offchain-tool-contract",
+      "prompt": "Design a Rust HTTP Tool for an external provider. Define the FQN, Input/Output schema, bounded injectable client, provider error mapping, metadata, signed HTTP fields, and deterministic tests before registration.",
+      "sources": [
+        "https://github.com/Talus-Network/nexus-sdk/tree/main/cli/src/tool",
+        "https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages"
+      ],
+      "expected_output": "A source-grounded implementation plan or patch with stable schemas, bounded provider I/O, local mock tests, secret-safe logging, and a registration boundary that stops before mutation.",
+      "expectations": [
+        "Success, provider failure, timeout, malformed payload, schema mismatch, signature tampering, and replay are covered.",
+        "Private keys and tokens never appear in source, fixtures, logs, or metadata.",
+        "The selected public source ref and test commands are recorded."
+      ]
+    },
+    {
+      "id": "offchain-read-evidence",
+      "prompt": "Verify an already deployed Tool's public package/module metadata using the bundled testnet evidence helper and an explicit testnet URL, while keeping local HTTP validation separate from runtime claims.",
+      "sources": [
+        "bundled:scripts/testnet_evidence.py",
+        "https://github.com/Talus-Network/nexus-sdk/blob/main/cli/src/tool/tool_validate.rs",
+        "https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages"
+      ],
+      "expected_output": "A report separating local deterministic validation from read-only testnet observations, with endpoint, methods, response digests, and an explicit gap when the endpoint is unavailable.",
+      "expectations": [
+        "The GraphQL query set is read-only and allowlisted.",
+        "No wallet, active environment, signing, registration, or transaction submission is used.",
+        "A public-state observation is not presented as proof of a provider invocation."
+      ]
+    },
+    {
+      "id": "offchain-grill-ambiguous",
+      "prompt": "Build an off-chain Tool for a provider that returns useful data. Begin the development workflow from this incomplete request.",
+      "sources": [
+        "bundled:references/implementation.md",
+        "https://github.com/Talus-Network/nexus-sdk/tree/main/cli/src/tool"
+      ],
+      "expected_output": "Exactly one recommended material question and a no-action stop until the goal, requirements, scope, authorization, acceptance evidence, and compact design are shared.",
+      "expectations": [
+        "The agent asks one unresolved material question at a time and includes a recommended answer with its reason.",
+        "The agent does not scaffold, acquire sources, build, test, generate metadata, write files, or register the Tool before the contract and design are explicit.",
+        "Facts answerable from the approved public source are resolved read-only rather than turned into unnecessary user questions."
+      ]
+    },
+    {
+      "id": "offchain-grill-fully-specified",
+      "prompt": "Build a Rust HTTP Tool named weather.lookup@1. Goal: return a normalized forecast for one city. Requirements: validate a city string, call the provider through a bounded injectable client, map timeout/HTTP/malformed-payload errors, expose a stable input/output schema, and bind signed HTTP to method/path/body digest/timestamp/nonce/key ID. Inputs: city and an operator-supplied HTTPS provider endpoint. In scope: the Tool crate, metadata, local mock tests, and secret-safe logs. Non-goals: production registration or payment movement. Authorization: local files/build/test are authorized; network reads use the operator endpoint; no signing, registration, or other shared-network mutation is authorized. Acceptance: success, provider failure, timeout, malformed payload, schema mismatch, signature tampering, replay, metadata, and locked local tests. Design: define schema/FQN first, isolate provider I/O behind a trait, then implement and test the adapter. Use approved public sources for version facts and do not ask a redundant question.",
+      "sources": [
+        "bundled:references/implementation.md",
+        "bundled:references/verification.md",
+        "https://github.com/Talus-Network/nexus-sdk/tree/main/cli/src/tool"
+      ],
+      "expected_output": "A recorded complete contract and compact design followed by the bounded local implementation/test workflow, with no redundant question and no registration mutation.",
+      "expectations": [
+        "The complete goal, requirements, inputs/boundary, scope, non-goals, authorization, acceptance evidence, and design are recorded before development actions.",
+        "No material clarification question is asked because the request already specifies the contract; public-source facts are resolved from the approved source.",
+        "The resulting tests preserve bounded provider I/O, secret-safe logging, signature/replay coverage, and the registration stop boundary."
+      ]
+    }
+  ]
+}

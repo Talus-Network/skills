@@ -1,0 +1,12 @@
+[package]
+name = "delayed_fixture"
+version = "0.1.0"
+edition = "2024"
+implicit-dependencies = false
+
+[dependencies]
+std = { local = "deps/sui-framework/packages/move-stdlib", package = "MoveStdlib" }
+sui = { local = "deps/sui-framework/packages/sui-framework", package = "Sui" }
+
+[environments]
+local = "00000000"

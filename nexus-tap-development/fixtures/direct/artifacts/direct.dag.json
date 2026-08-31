@@ -1,0 +1,13 @@
+{
+  "vertices": [
+    {
+      "name": "entry",
+      "kind": {"variant": "on_chain", "tool_fqn": "direct.fixture.execute@1"},
+      "entry_ports": [{"name": "input"}],
+      "output_ports": {"ok": [{"name": "result"}]}
+    }
+  ],
+  "edges": [],
+  "outputs": [{"vertex": "entry", "output_variant": "ok", "output_port": "result"}],
+  "shared_objects": []
+}

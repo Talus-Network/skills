@@ -1,11 +1,11 @@
 ---
 name: nexus-onchain-task-debugging
-description: Diagnose Nexus Task, Occurrence, Execution, Tool, result, timeout, and payment failures from exact read-only evidence; use when an on-chain workflow is pending, failed, or inconsistent.
+description: Diagnose pending, failed, or inconsistent Nexus Executions by inspecting exact read-only on-chain Task, DAG/configuration, input, Tool/result, authorization, and payment records and exhaustively classifying causes without guessing runtime behavior.
 ---
 
 # Nexus on-chain Task debugging
 
-Use this skill to trace a Task through its Occurrences, Executions, Tool/Invocation results, authorization, timeouts, and payment records. The goal is a bounded diagnosis with exact identifiers and a safe next read, not an improvised retry.
+Use this skill to trace a Task through its Occurrences, Executions, historical DAG/configuration, supplied and effective inputs, Tool/Invocation results, authorization, timeouts, and payment records. For every Execution, inspect all of those on-chain surfaces and return an exhaustive evidence ledger, not an improvised retry or a behavioral guess.
 
 For version-sensitive setup or CLI fields, use the published [Developer Setup](https://docs.talus.network/guides/getting-started/setup) and verify it with `scripts/docs_website.py`; do not search for a private or local source.
 
@@ -87,11 +87,15 @@ Treat missing, stale, malformed, or conflicting evidence as a blocker and record
 
 1. Pin the selected CLI/SDK version and verify the command-family help before interpreting a field.
 2. Capture the explicit testnet endpoint and network identity without printing keys or capability material.
-3. Read Task, Occurrence, Execution, Tool/Invocation, result, and payment objects in that order; preserve owner, version, type, digest, and transaction/checkpoint provenance.
-4. Separate committed result state, authorization state, timeout state, payment reserve, `ExecutionPayment`, Tool charges, refunds, and SUI gas.
-5. Compare every relationship to the exact event/effect or read response that establishes it. Do not infer a missing edge from a name, FQN, or timestamp.
-6. Return the earliest missing/conflicting evidence and the next safe read. Any refill, settlement, abort, close, retry, or scheduling action belongs behind a separate explicit authorization gate.
+3. Resolve the Task, Occurrence, and Execution through exact IDs. Preserve owner, version, type, digest, and transaction/checkpoint provenance for every record.
+4. Read the exact historical DAG and Execution configuration from on-chain object, event, or effect records. Inspect entry group, vertices, edges, defaults, Tool bindings, port schemas, scheduling/policy fields, timeouts, and lifecycle counters.
+5. Read every supplied input and effective input/evaluation. For every Tool input port, establish its exact entry value, DAG default, or incoming edge and compare its port, cardinality, type/value kind, value or commitment, and Invocation link.
+6. Read the Tool/Invocation, result/receipt, Leader authorization, and every payment surface: Task funding/reserve, `ExecutionPayment`, locks, Tool price/charge, priority fee, refund, recipient, settlement, and native SUI gas.
+7. Compare every identity and relationship to the exact on-chain record that establishes it. CLI help and prepared public source may explain a returned field, but they are not evidence that a deployed object contains a value or that an actor behaved in a particular way.
+8. Build the worksheet's cause ledger. Include every applicable invariant-failure cause across identity/configuration, DAG, inputs, lifecycle, Tool/result, authorization, and payment. Classify each cause only as `confirmed`, `ruled out`, or `unresolved`, cite the exact evidence, and name the missing read for every unresolved cause.
+9. Do not stop at the first plausible outcome or evidence gap while another independent required read remains possible. Never use `likely`, `probably`, inferred intent, expected off-chain behavior, or a terminal event as a substitute for exact cause evidence.
+10. Return the bounded cause ledger and safe next reads. Any refill, settlement, abort, close, retry, or scheduling action belongs behind a separate explicit authorization gate.
 
 ## Completion boundary
 
-Offline package/build/schema checks prove only structure. Read-only testnet evidence proves only the returned public state at collection time. Neither is native execution, registration, or payment settlement proof; state those limits in the report.
+Offline package/build/schema checks prove only structure. Read-only testnet evidence proves only the returned public state at collection time. Neither is native execution, registration, actor intent, off-chain behavior, or payment settlement proof; state those limits and leave any unsupported cause `unresolved`.

@@ -9,9 +9,11 @@
         "https://github.com/Talus-Network/nexus-sdk/tree/main/sdk/src",
         "https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages"
       ],
-      "expected_output": "A diagnosis table with exact identities and evidence classes, the earliest missing/conflicting read, and a safe next-read plan.",
+      "expected_output": "A complete component matrix and cause ledger with exact identities, evidence classes, every confirmed, ruled-out, or unresolved cause, and safe next reads for all evidence gaps.",
       "expectations": [
         "The report does not infer a relationship from a name, FQN, timestamp, or payment ID alone.",
+        "It inspects the historical DAG/configuration and supplied/effective inputs even though the prompt already names a payment shortfall.",
+        "It lists every applicable identity, configuration, DAG, input, lifecycle, Tool/result, authorization, and payment cause as confirmed, ruled out, or unresolved from exact on-chain evidence.",
         "It distinguishes read-only diagnosis from refill, settlement, abort, close, retry, or scheduling mutations.",
         "It records checkpoint/transaction provenance and response digests when available."
       ]
@@ -30,6 +32,24 @@
         "The endpoint and network identity are explicit in the report.",
         "Only allowlisted read-only GraphQL queries are sent for the shown GraphQL endpoint.",
         "The report states that public-state evidence does not prove execution or settlement."
+      ]
+    },
+    {
+      "id": "execution-exhaustive-onchain-causes",
+      "prompt": "Diagnose an Execution whose on-chain history contains a walk request followed by a Leader timeout. Inspect the exact historical DAG and configuration, every supplied and effective input, Invocation/result and authorization records, Task funding, ExecutionPayment, Tool charges, refunds, priority fee, and native SUI gas. List all possible protocol-record causes without guessing what any Leader, Tool, scheduler, SDK, or external service did off chain.",
+      "sources": [
+        "bundled:nexus-onchain-task-debugging/references/diagnosis.md",
+        "https://github.com/Talus-Network/nexus-sdk/tree/main/sdk/src",
+        "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages",
+        "bundled:scripts/testnet_evidence.py"
+      ],
+      "expected_output": "A complete component matrix and cause ledger that classifies every applicable invariant failure as confirmed, ruled out, or unresolved using exact on-chain object/event/effect evidence and names each missing read.",
+      "expectations": [
+        "A walk-request event is treated only as dispatch evidence and a Leader timeout only as a recorded outcome, not as proof of complete inputs, Tool execution, or Leader fault.",
+        "DAG entry-group values, defaults, edges, Tool bindings, and port schemas are reconciled against every supplied/effective input and Invocation commitment.",
+        "Task funding, ExecutionPayment, Tool charge, refund, priority fee, recipients, settlement, and native SUI gas remain separate cause rows.",
+        "No cause is described as likely or probable; exact conflicts are confirmed, fully satisfied invariants are ruled out, and missing or non-exposing reads remain unresolved.",
+        "The diagnosis continues through independent required reads after finding a conflict and does not stop at the first plausible cause."
       ]
     }
   ]

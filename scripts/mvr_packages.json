@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "registry": {
+    "page_base_url": "https://www.moveregistry.com/package",
+    "api_base_urls": {
+      "testnet": "https://testnet.mvr.mystenlabs.com/v1/names",
+      "mainnet": "https://mainnet.mvr.mystenlabs.com/v1/names"
+    }
+  },
+  "source_repository": "https://github.com/Talus-Network/nexus-move-packages",
+  "packages": [
+    {
+      "name": "@talus/nexus-interface",
+      "dependency_key": "nexus_interface",
+      "source_path": "packages/interface",
+      "page_url": "https://www.moveregistry.com/package/@talus/nexus-interface",
+      "version": 1,
+      "networks": {
+        "testnet": {
+          "api_url": "https://testnet.mvr.mystenlabs.com/v1/names/%40talus%2Fnexus-interface",
+          "package_address": "0xd73f9252b5a1056b75f66c1ec9ddfb4b1f92b607d25d9297e7fc747644c7c762",
+          "source_tag": "testnet/v1"
+        },
+        "mainnet": {
+          "api_url": "https://mainnet.mvr.mystenlabs.com/v1/names/%40talus%2Fnexus-interface",
+          "package_address": "0x23333bd0bed47abb5e9fabfabd32a08fa6557bd89c5a6f61e2a44c1054f054ee",
+          "source_tag": "mainnet/v1"
+        }
+      }
+    },
+    {
+      "name": "@talus/nexus-primitives",
+      "dependency_key": "nexus_primitives",
+      "source_path": "packages/primitives",
+      "page_url": "https://www.moveregistry.com/package/@talus/nexus-primitives",
+      "version": 1,
+      "networks": {
+        "testnet": {
+          "api_url": "https://testnet.mvr.mystenlabs.com/v1/names/%40talus%2Fnexus-primitives",
+          "package_address": "0xd3f55499a63349e828ef21dec04ba16131d07faccceebfb0f2d6208d2a7da102",
+          "source_tag": "testnet/v1"
+        },
+        "mainnet": {
+          "api_url": "https://mainnet.mvr.mystenlabs.com/v1/names/%40talus%2Fnexus-primitives",
+          "package_address": "0x0d44a0624c3e607933273e80140766f11aa35259ae64b4c47ee683afa044c1e6",
+          "source_tag": "mainnet/v1"
+        }
+      }
+    },
+    {
+      "name": "@talus/nexus-registry",
+      "dependency_key": "nexus_registry",
+      "source_path": "packages/registry",
+      "page_url": "https://www.moveregistry.com/package/@talus/nexus-registry",
+      "version": 1,
+      "networks": {
+        "testnet": {
+          "api_url": "https://testnet.mvr.mystenlabs.com/v1/names/%40talus%2Fnexus-registry",
+          "package_address": "0xbd7c5f7c10ede0495ab6aaa2c7210c6cde046b97521c1810d89e0565e07e4d86",
+          "source_tag": "testnet/v1"
+        },
+        "mainnet": {
+          "api_url": "https://mainnet.mvr.mystenlabs.com/v1/names/%40talus%2Fnexus-registry",
+          "package_address": "0xf01174d560a525a8b0635b5713ba334e26d7cd6f221701e785c28e46febf6fd4",
+          "source_tag": "mainnet/v1"
+        }
+      }
+    },
+    {
+      "name": "@talus/nexus-tool",
+      "dependency_key": "nexus_tool",
+      "source_path": "packages/tool",
+      "page_url": "https://www.moveregistry.com/package/@talus/nexus-tool",
+      "version": 1,
+      "networks": {
+        "testnet": {
+          "api_url": "https://testnet.mvr.mystenlabs.com/v1/names/%40talus%2Fnexus-tool",
+          "package_address": "0x439762fd2e3c92da63e4903bb6a15e388c7c0566994c2d0f329dae20e968d560",
+          "source_tag": "testnet/v1"
+        },
+        "mainnet": {
+          "api_url": "https://mainnet.mvr.mystenlabs.com/v1/names/%40talus%2Fnexus-tool",
+          "package_address": "0x068a3f8a6fbc02bafc88b22af820ce4223ae73e0a61e56724b5fd5665e6adf15",
+          "source_tag": "mainnet/v1"
+        }
+      }
+    },
+    {
+      "name": "@talus/nexus-scheduler",
+      "dependency_key": "nexus_scheduler",
+      "source_path": "packages/scheduler",
+      "page_url": "https://www.moveregistry.com/package/@talus/nexus-scheduler",
+      "version": 1,
+      "networks": {
+        "testnet": {
+          "api_url": "https://testnet.mvr.mystenlabs.com/v1/names/%40talus%2Fnexus-scheduler",
+          "package_address": "0x6756e835731d019f9d195401e652327864f15d849650d19ab3871451a840a3c8",
+          "source_tag": "testnet/v1"
+        },
+        "mainnet": {
+          "api_url": "https://mainnet.mvr.mystenlabs.com/v1/names/%40talus%2Fnexus-scheduler",
+          "package_address": "0x55eda9bb471a873cf8e0ebdfd45b86f34a46b4c7fbfe27d81d391d4b8943f471",
+          "source_tag": "mainnet/v1"
+        }
+      }
+    },
+    {
+      "name": "@talus/nexus-workflow",
+      "dependency_key": "nexus_workflow",
+      "source_path": "packages/workflow",
+      "page_url": "https://www.moveregistry.com/package/@talus/nexus-workflow",
+      "version": 1,
+      "networks": {
+        "testnet": {
+          "api_url": "https://testnet.mvr.mystenlabs.com/v1/names/%40talus%2Fnexus-workflow",
+          "package_address": "0x30a2a0ed2a137181277af9035864747aa7db4056bfba9a5d3cc04521fb2d0798",
+          "source_tag": "testnet/v1"
+        },
+        "mainnet": {
+          "api_url": "https://mainnet.mvr.mystenlabs.com/v1/names/%40talus%2Fnexus-workflow",
+          "package_address": "0x4fa064aba168c1b8377dcf00c9f2bf53366ac93e0dd470ebdbcb1e703898413d",
+          "source_tag": "mainnet/v1"
+        }
+      }
+    }
+  ],
+  "not_registered": [
+    "@talus/nexus-policy",
+    "@talus/nexus-kernel"
+  ]
+}

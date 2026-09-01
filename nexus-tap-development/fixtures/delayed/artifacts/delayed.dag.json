@@ -1,0 +1,21 @@
+{
+  "vertices": [
+    {
+      "name": "schedule",
+      "kind": {"variant": "on_chain", "tool_fqn": "delayed.fixture.schedule@1"},
+      "entry_ports": [{"name": "input"}],
+      "output_ports": {"scheduled": [{"name": "occurrence"}]}
+    },
+    {
+      "name": "follow_up",
+      "kind": {"variant": "on_chain", "tool_fqn": "delayed.fixture.execute@1"},
+      "entry_ports": [{"name": "occurrence"}],
+      "output_ports": {"completed": [{"name": "result"}]}
+    }
+  ],
+  "edges": [
+    {"from": "schedule", "to": "follow_up", "source_port": "occurrence", "target_port": "occurrence"}
+  ],
+  "outputs": [{"vertex": "follow_up", "output_variant": "completed", "output_port": "result"}],
+  "shared_objects": []
+}

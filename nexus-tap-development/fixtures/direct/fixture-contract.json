@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "fixture": "direct",
+  "package": "direct_fixture",
+  "dependency_template": "dependency-template.json",
+  "rewrite_provenance": "dependency-template.json",
+  "source_module": "direct",
+  "test_module": "direct",
+  "success_tests": [
+    "direct_path_produces_and_completes_output",
+    "direct_path_handles_zero_input"
+  ],
+  "expected_failure_tests": [
+    {"name": "direct_begin_rejects_input_above_limit", "abort_code": 0, "branch": "begin input > 99"},
+    {"name": "direct_execute_rejects_input_above_limit", "abort_code": 1, "branch": "execute input > 99"}
+  ],
+  "test_counts": {"success": 2, "expected_failure": 2, "total": 4}
+}

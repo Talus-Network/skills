@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "fixture": "direct",
+  "package": "direct_fixture",
+  "source": {
+    "repository": "MystenLabs/sui",
+    "revision": "d8459684b41eb09ab23fe16a9dd84173270bbaba",
+    "archive_sha256": "1b974c1b10413e873b98df2740a877a930a08b40c80af58b52f737385f8bdf44",
+    "archive_url": "https://codeload.github.com/MystenLabs/sui/tar.gz/d8459684b41eb09ab23fe16a9dd84173270bbaba",
+    "toolchain": "sui 1.78.0-d8459684b41e",
+    "framework_paths": {
+      "std": "crates/sui-framework/packages/move-stdlib",
+      "sui": "crates/sui-framework/packages/sui-framework"
+    }
+  },
+  "template": {
+    "manifest": "Move.toml",
+    "dependencies": {
+      "std": {"local": "deps/sui-framework/packages/move-stdlib", "package": "MoveStdlib"},
+      "sui": {"local": "deps/sui-framework/packages/sui-framework", "package": "Sui"}
+    },
+    "package_manifests": {
+      "std": "deps/sui-framework/packages/move-stdlib/Move.toml",
+      "sui": "deps/sui-framework/packages/sui-framework/Move.toml"
+    }
+  },
+  "rewrite": {
+    "mode": "replace-template-with-authenticated-public-sui-framework",
+    "destination": "deps/sui-framework/packages",
+    "source": "source",
+    "excluded_files": ["Move.lock"]
+  }
+}

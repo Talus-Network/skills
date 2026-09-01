@@ -1,0 +1,8 @@
+[package]
+name = "Sui"
+version = "0.1.0"
+edition = "2024"
+implicit-dependencies = false
+
+[environments]
+local = "00000000"

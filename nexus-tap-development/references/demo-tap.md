@@ -1,6 +1,6 @@
 # Repository-owned TAP patterns
 
-Use these patterns as local examples for a TAP with a direct path and a delayed path. The bundle ships concrete [direct](../fixtures/direct/README.md) and [delayed](../fixtures/delayed/README.md) fixtures with Move tests and bound artifacts; they intentionally use placeholder IDs and pure application state so they can be tested without a deployed service or network mutation.
+Use these patterns as local examples for a TAP with a direct path and a delayed path. The bundle ships concrete [direct](../fixtures/direct/README.md) and [delayed](../fixtures/delayed/README.md) fixtures with Move tests and bound artifacts; they intentionally use placeholder IDs and pure application state so they can be tested without a deployed service or network mutation. When a TAP test calls published Nexus functions, add the beta CLI's `"$NEXUS_BETA_CLI" tap test --path <tap-package> --build-env testnet` gate after the package-owned tests; these fixtures remain structural/application evidence and are not native Nexus execution proof.
 
 For public lifecycle terminology, consult the published [TAP CLI reference](https://docs.talus.network/reference/cli/tap). This website link is documentation-only guidance and never a compiler, build, runtime, forward, or testnet source.
 

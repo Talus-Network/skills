@@ -12,9 +12,13 @@ The off-chain Tool returns exactly one schema-valid choice or an explicit error.
 
 Cover each legal provider choice, provider timeout/error, malformed JSON, invalid choice, commitment mismatch, wrong recipient, unsatisfied witness, and every reachable output branch. Use deterministic local mocks for provider I/O and pure Move tests for application logic.
 
+## Published-bytecode check
+
+After the pure application tests, run the beta `"$NEXUS_BETA_CLI" tap test --path <tap-package> --build-env testnet` command when the TAP tests call published Nexus functions. It reads public bytecode and overlays only test extensions in a local VM; it does not publish, register, bind, schedule, settle, or move assets. Diagnose the earliest ABI, authorization, commitment, output, or finalization error, make the smallest repair, and rerun the same VM gate before artifact checks.
+
 ## Artifact checks
 
-Validate the DAG edge, input/output ports, fixed Tool identity, skill path, payment policy, and schedule policy against caller-held semantic intent. Run the bundled validators after a successful build; negative mutations must fail closed.
+Validate the DAG edge, input/output ports, fixed Tool identity, skill path, payment policy, and schedule policy against caller-held semantic intent with `verify_tap_artifacts.py --require-artifacts --json`. This structural validator owns JSON/artifact failures; negative mutations must fail closed and must not be routed to the beta VM.
 
 ## Deployed read
 

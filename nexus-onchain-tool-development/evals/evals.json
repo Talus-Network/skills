@@ -16,7 +16,25 @@
       "expectations": [
         "The consumer manifest uses only copied public package paths and preserves required metadata.",
         "Authorization, witness, recipient, commitment, output, and finalization order are tested.",
-        "Offline validator output is not presented as native execution or registration proof."
+        "Offline validator output is not presented as native execution or registration proof.",
+        "When tests call published Nexus functions, the explicit NEXUS_BETA_CLI VM gate is run and rerun unfiltered after any focused diagnosis; its directory is not exported on PATH."
+      ]
+    },
+    {
+      "id": "onchain-tool-test-repair",
+      "prompt": "In a fresh isolated consumer workspace, build an on-chain Move Tool with the public contract and run its local tests. A seeded local failure occurs during the published-bytecode test. Diagnose the failure from the first concrete command output, make the smallest repair, rerun the owning gate, and report the boundary before any deployment action.",
+      "sources": [
+        "bundled:references/workflow.md",
+        "bundled:references/source-map.md",
+        "https://github.com/Talus-Network/nexus-sdk/blob/main/cli/src/tap/tap_test.rs",
+        "https://github.com/Talus-Network/nexus-move-packages/blob/main/docs/tap_development.md",
+        "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages"
+      ],
+      "expected_output": "A clean local Tool test result after an evidence-backed minimal repair, with the first failure identified and live-network actions explicitly out of scope.",
+      "expectations": [
+        "The agent runs package-owned tests and the explicit NEXUS_BETA_CLI VM gate against published Nexus bytecode.",
+        "The agent does not infer the defective field from the prompt; it reports the earliest concrete compiler, linker, ABI/layout, witness/result, authorization, commitment, output, or finalization message.",
+        "The agent changes only the implicated Tool source or test arrangement, reruns the same gate unfiltered, and does not publish, register, bind, schedule, sign, or move assets."
       ]
     },
     {

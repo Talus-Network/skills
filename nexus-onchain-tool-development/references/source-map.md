@@ -6,6 +6,7 @@ Use the public source references below for version-sensitive questions:
 | --- | --- |
 | Tool/TAP lifecycle and mutation boundaries | Bundled workflow and mutation-gate references |
 | CLI templates, schemas, and validators | [Nexus SDK](https://github.com/Talus-Network/nexus-sdk/tree/main/cli/src/tool) |
+| Local published-bytecode TAP VM | [Nexus SDK `tap test` implementation](https://github.com/Talus-Network/nexus-sdk/blob/main/cli/src/tap/tap_test.rs) and the [Move Packages TAP testing guide](https://github.com/Talus-Network/nexus-move-packages/blob/main/docs/tap_development.md) |
 | Move interface source and offline dependency closure | [Nexus Move Packages](https://github.com/Talus-Network/nexus-move-packages/tree/main/packages) |
 | Network-facing Move installation/dependencies | [nexus-interface](https://www.moveregistry.com/package/@talus/nexus-interface), [nexus-primitives](https://www.moveregistry.com/package/@talus/nexus-primitives), [nexus-registry](https://www.moveregistry.com/package/@talus/nexus-registry), [nexus-tool](https://www.moveregistry.com/package/@talus/nexus-tool), [nexus-scheduler](https://www.moveregistry.com/package/@talus/nexus-scheduler), and [nexus-workflow](https://www.moveregistry.com/package/@talus/nexus-workflow) |
 | Sui framework packages for offline Move builds | [Sui](https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages) at the pinned installed-CLI revision |

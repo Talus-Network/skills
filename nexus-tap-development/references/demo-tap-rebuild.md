@@ -8,6 +8,7 @@ Use this reference when a complete direct-plus-delayed fixture is requested. Rec
 - Each fixture package has a nontrivial `execute` path with typed state/output behavior; native authorization/finalization is covered separately by the generated public-ABI consumer.
 - DAG and skill artifacts agree on FQNs, ports, paths, commitments, policies, and fixed Tools.
 - Pure tests cover direct and delayed application behavior and every documented invalid-input branch as an expected Move failure.
+- If the reconstructed TAP includes tests that call published Nexus functions, run the beta `"$NEXUS_BETA_CLI" tap test --path <tap-package> --build-env testnet` gate after the package-owned tests and preserve its output as published-bytecode evidence.
 - A read-only testnet report is used only for optional deployed package/module/object observation.
 
 ## Failure behavior

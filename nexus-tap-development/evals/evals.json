@@ -22,7 +22,25 @@
         "DAG vertices, edges, ports, fixed Tools, policies, commitments, and skill paths agree with caller-held intent.",
         "Direct and delayed application paths are tested independently.",
         "Use the bundled direct and delayed fixture packages and their bound artifacts as repository-owned starting points.",
-        "No deployment ID, capability, credential, or mutation is invented."
+        "No deployment ID, capability, credential, or mutation is invented.",
+        "When tests call published Nexus functions, the explicit beta VM gate is used; DAG and skill-artifact JSON are checked separately with verify_tap_artifacts.py."
+      ]
+    },
+    {
+      "id": "tap-test-repair",
+      "prompt": "In a fresh isolated consumer workspace, create a TAP with a package-owned Tool, DAG, skill artifact, and local tests. A seeded local failure occurs in one of the owning validation gates. Diagnose the failure from the first concrete command output, make the smallest repair, rerun the owning gate, and report the boundary before any deployment action.",
+      "sources": [
+        "bundled:references/tap-workflow.md",
+        "bundled:references/demo-tap.md",
+        "https://github.com/Talus-Network/nexus-sdk/blob/main/cli/src/tap/tap_test.rs",
+        "https://github.com/Talus-Network/nexus-move-packages/blob/main/docs/tap_development.md",
+        "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages"
+      ],
+      "expected_output": "A clean local TAP artifact and published-bytecode test result after an evidence-backed minimal repair, with the first failure identified and live-network actions explicitly out of scope.",
+      "expectations": [
+        "The agent runs package-owned Move tests, the structural artifact validator for DAG/skill JSON, and the explicit beta VM gate when tests call published Nexus functions.",
+        "The agent does not infer the defective DAG, skill, port, path, commitment, or policy field from the prompt; it reports the earliest concrete validator or VM message.",
+        "The agent changes only the implicated artifact, package source, or test arrangement, reruns the same owning gate unfiltered, and does not send a DAG/skill JSON failure to the VM or a VM failure to the artifact validator."
       ]
     },
     {

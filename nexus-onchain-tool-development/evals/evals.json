@@ -69,7 +69,7 @@
     },
     {
       "id": "onchain-grill-fully-specified",
-      "prompt": "Build a Sui Move Tool named weather.lookup@1. Goal: expose a public execute ABI that reads a package-owned WeatherState and produces one TaggedOutput. Requirements: place the framework-owned prefix before application inputs and end with &mut TxContext; consume the supplied authorization against the exact recipient, state UID, and input commitment before changing state; finalize one output on every branch. Inputs: a WeatherState object, public authorization/result interfaces, and operator-supplied placeholder IDs. In scope: the consumer Move package, manifest, artifact summary, pure application tests, and structural validators. Non-goals: publication, registration, binding, scheduling, asset movement, or invented deployment IDs. Authorization: local files/build/test are authorized; only read-only official Testnet GraphQL observations are allowed; no wallet, environment switch, signing, or shared-network mutation is authorized. Acceptance: ABI/order, witness/recipient/commitment, output/finalization, malformed-input, pure tests, manifest closure, and artifact validation. Design: inspect the public interface contract, write the smallest package, then run isolated local tests and validators. Use approved public sources and do not ask a redundant question.",
+      "prompt": "Build a Sui Move Tool named com.example.weather.lookup@1. Goal: expose a public execute ABI that reads a package-owned WeatherState and produces one TaggedOutput. Requirements: place the framework-owned prefix before application inputs and end with &mut TxContext; consume the supplied authorization against the exact recipient, state UID, and input commitment before changing state; finalize one output on every branch. Inputs: a WeatherState object, public authorization/result interfaces, and operator-supplied placeholder IDs. In scope: the consumer Move package, manifest, artifact summary, pure application tests, and structural validators. Non-goals: publication, registration, binding, scheduling, asset movement, or invented deployment IDs. Authorization: local files/build/test are authorized; only read-only official Testnet GraphQL observations are allowed; no wallet, environment switch, signing, or shared-network mutation is authorized. Acceptance: ABI/order, witness/recipient/commitment, output/finalization, malformed-input, pure tests, manifest closure, and artifact validation. Design: inspect the public interface contract, write the smallest package, then run isolated local tests and validators. Use approved public sources and do not ask a redundant question.",
       "sources": [
         "bundled:references/workflow.md",
         "bundled:references/source-map.md",
@@ -83,6 +83,22 @@
         "The complete goal, requirements, inputs/boundary, scope, non-goals, authorization, acceptance evidence, and design are recorded before development actions.",
         "No material clarification question is asked because the request already specifies the contract; public-source facts are resolved from approved sources.",
         "The resulting package/tests preserve authorization, witness, commitment, output, finalization, artifact, and read-only Testnet boundaries."
+      ]
+    },
+    {
+      "id": "onchain-scaffold-admission-and-witness",
+      "prompt": "Adapt an on-chain Tool scaffold that transfers assets from shared state for an authorized TAP. Its execute prefix includes ProvenValue<AgentVertexAuthorization> but the body only drops that proof; registration notes use the shared state ID as tool-witness-id although the witness lives in a Bag. Implement and test the local admission checks and prepare registration inputs. Local package and published-bytecode tests are authorized; publication, registration, signing, and asset movement on the network are not.",
+      "sources": [
+        "bundled:references/scaffolding.md",
+        "bundled:references/workflow.md",
+        "https://docs.talus.network/guides/tool-development/build-onchain-tool"
+      ],
+      "expected_output": "A verified pre-mutation authorization boundary, matching result schema, exercised rejection cases, and a registration report that requires proven nested-witness extraction.",
+      "expectations": [
+        "The implementation consumes verified authorization against worksheet recipient, state UID, and input commitment before any state or asset mutation; dropping the proof is insufficient.",
+        "The witness ID is distinguished from state and dynamic-field wrapper IDs, and registration remains pending if a reviewed decoder fixture is absent.",
+        "Tests calling Nexus functions use the explicit published-bytecode harness instead of treating pure logic tests as full execute-path proof.",
+        "No local sibling implementation dependency, manual registration-mode flag, or unauthorized transaction is introduced."
       ]
     }
   ]

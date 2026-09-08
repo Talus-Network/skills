@@ -1,6 +1,6 @@
 ---
 name: nexus-onchain-tool-development
-description: Build, test, and safely integrate Nexus on-chain Tools in Sui Move; use when implementing an execute module, witness/result schema, registration inputs, or a read-only deployment check.
+description: Scaffold, implement, and test Nexus on-chain Tools in Sui Move, including execute ABI, verified workflow authorization, witness/result schemas, published-bytecode tests, and registration preparation.
 ---
 
 # Nexus on-chain Tool development
@@ -129,7 +129,7 @@ Run Move build/test, the bundle's compiled/artifact validators, and pure applica
 
 | Request | Read |
 | --- | --- |
-| Scaffold or implement a Move Tool | [workflow](references/workflow.md) |
+| Scaffold or implement a Move Tool | [Scaffolding and completion checklist](references/scaffolding.md), then [workflow](references/workflow.md). |
 | Choose authorization or witness handling | [workflow](references/workflow.md) |
 | Review public ABI/dependency provenance | [source map](references/source-map.md) |
 | Connect a Tool to a TAP | `nexus-tap-development` and its mixed-tool reference |

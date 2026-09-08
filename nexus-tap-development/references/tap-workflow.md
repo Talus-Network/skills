@@ -1,5 +1,7 @@
 # TAP workflow
 
+This workflow applies to package, DAG, and skill-artifact changes. For an application over an existing TAP, use [Nexus API application development](nexus-api-application.md); app-only work does not require package setup or fixture gates.
+
 Use the released `nexus` binary for scaffold, validation, publication, registration, binding, and scheduling. Set `NEXUS_BETA_CLI` to the explicit beta binary from Developer Setup and use it only for `tap test`; do not put its directory on `PATH`.
 
 ## Package and artifact layout

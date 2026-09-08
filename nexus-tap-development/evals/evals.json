@@ -1,6 +1,6 @@
 {
   "skill_name": "nexus-tap-development",
-  "source_constraint": "Use the six reviewed public Move Registry packages for network-facing Nexus Move dependencies, repository-owned TAP patterns, and the three approved anonymous public repositories (Nexus SDK, Nexus Move Packages, and the pinned Sui framework source) for offline closure, plus explicit read-only Sui testnet evidence. Do not use private repositories, wallets, credentials, or a network mutation.",
+  "source_constraint": "Use the six reviewed public Move Registry packages for network-facing Nexus Move dependencies, repository-owned TAP patterns, and the three approved anonymous public repositories (Nexus SDK, Nexus Move Packages, and the pinned Sui framework source) for offline closure, plus explicit read-only Sui testnet evidence. Do not use private repositories, wallets, credentials, or a network mutation. Application-only REST/SSE work uses the bundled API reference, published Nexus API guides, and provider API reference with local mocks; it does not require Move dependencies or provider credentials.",
   "evals": [
     {
       "id": "tap-local-package",
@@ -75,7 +75,7 @@
     },
     {
       "id": "tap-grill-fully-specified",
-      "prompt": "Build a TAP named weather.workflow@1. Goal: run a direct fetch step and a delayed verification step over package-owned WeatherState. Requirements: define DAG vertices/edges/ports, bind fixed Tools and policies, preserve input commitment, test direct and delayed branches, and keep structural/repository-owned/read-only Testnet evidence separate. Inputs: the bundled direct and delayed fixture patterns, approved public SDK/Move Packages/Sui sources, and operator-supplied placeholder deployment IDs. In scope: the TAP package, Move package, DAG, skill artifact, dependency provenance, pure tests, and structural validators. Non-goals: publication, registration, binding, scheduling, settlement, upgrades, signing, credentials, or live asset movement. Authorization: local files/build/test and read-only official Testnet GraphQL are allowed; no wallet, environment switch, source mutation, or shared-network write is authorized. Acceptance: direct/delayed fixture tests, DAG/artifact consistency, public dependency closure, cleanup, validator output, and explicit evidence limitations. Design: record the contract, adapt repository-owned fixtures, validate artifacts, then run isolated local tests and optional read-only evidence. Use approved public sources and do not ask a redundant question.",
+      "prompt": "Build a TAP named com.example.weather.workflow@1. Goal: run a direct fetch step and a delayed verification step over package-owned WeatherState. Requirements: define DAG vertices/edges/ports, bind fixed Tools and policies, preserve input commitment, test direct and delayed branches, and keep structural/repository-owned/read-only Testnet evidence separate. Inputs: the bundled direct and delayed fixture patterns, approved public SDK/Move Packages/Sui sources, and operator-supplied placeholder deployment IDs. In scope: the TAP package, Move package, DAG, skill artifact, dependency provenance, pure tests, and structural validators. Non-goals: publication, registration, binding, scheduling, settlement, upgrades, signing, credentials, or live asset movement. Authorization: local files/build/test and read-only official Testnet GraphQL are allowed; no wallet, environment switch, source mutation, or shared-network write is authorized. Acceptance: direct/delayed fixture tests, DAG/artifact consistency, public dependency closure, cleanup, validator output, and explicit evidence limitations. Design: record the contract, adapt repository-owned fixtures, validate artifacts, then run isolated local tests and optional read-only evidence. Use approved public sources and do not ask a redundant question.",
       "sources": [
         "bundled:references/tap-workflow.md",
         "bundled:references/demo-tap.md",
@@ -90,6 +90,51 @@
         "The complete goal, requirements, inputs/boundary, scope, non-goals, authorization, acceptance evidence, and design are recorded before development actions.",
         "No material clarification question is asked because the request already specifies the contract; public-source facts are resolved from approved sources.",
         "The resulting TAP preserves direct/delayed coverage, artifact consistency, cleanup, public dependency provenance, and the distinction between structural and read-only Testnet evidence."
+      ]
+    },
+    {
+      "id": "tap-api-app-only",
+      "prompt": "Build a React Run Watcher for an existing TAP. Show a filtered execution list, selected execution detail and event history, and live refresh after execution events. The application directory and existing Agent/DAG identifiers are supplied by the caller. Use a same-origin server relay and deterministic mock responses; no real provider key, Move package, source download, deployment, or wallet transaction is authorized. Include loading, error, empty, syncing, and explicit retry states, typecheck/build the app, and test the read and replay behavior.",
+      "sources": [
+        "bundled:references/nexus-api-application.md",
+        "https://docs.talus.network/guides/nexus-api/tutorial/05-port-to-react",
+        "https://docs.talus.network/guides/nexus-api/typescript-client"
+      ],
+      "expected_output": "An app-only implementation with a server credential boundary, validated REST/SSE consumers, deterministic tests, and clear limits on live deployment evidence.",
+      "expectations": [
+        "The skill does not trigger Move/CLI installation, source preparation, package scaffolding, TAP fixtures, or chain mutation for an app-only request.",
+        "The provider key stays server-side and a synthetic-key bundle scan proves it is absent from emitted browser assets.",
+        "Execution event history uses the execution-scoped paginated route, while SSE uses events:read separately from executions:read.",
+        "Validated events trigger REST refresh and React cleanup/retry creates an explicit generation without stale requests or cursor loss."
+      ]
+    },
+    {
+      "id": "tap-api-page-replay-recovery",
+      "prompt": "Review and repair a TAP application consumer with mocked API responses. Its execution list spans seven pages; one next_token is zero and a later page gets 429 before succeeding. The SSE fixture contains a mismatched transport/payload ID, a valid frame, a duplicate, a backwards ID, and a malformed frame. Reconnect once, then simulate 403. Keep the provider key confined to the server relay and preserve enough diagnostics to explain the stopped state. Only local app edits and tests are authorized.",
+      "sources": [
+        "bundled:references/nexus-api-application.md",
+        "https://docs.talus.network/guides/nexus-api/typescript-client"
+      ],
+      "expected_output": "A complete, duplicate-free list and replay state advanced only by validated increasing event IDs, with bounded retries and terminal authorization recovery.",
+      "expectations": [
+        "Pagination preserves opaque zero/nonzero cursors, stops at null, rejects repeated cursors, and has no arbitrary page-count cap.",
+        "A failed page retries without yielding duplicates, honors Retry-After, and successful pages reset the retry budget.",
+        "Invalid, mismatched, duplicate, and backwards event IDs never advance the stored replay cursor.",
+        "Reconnect refreshes REST and forwards the saved cursor; 403 stops reconnecting until explicit credential recovery."
+      ]
+    },
+    {
+      "id": "tap-api-write-and-projection-boundary",
+      "prompt": "A TAP dashboard receives an ExecutionFinished SSE frame immediately after a user-approved wallet transaction, but the execution detail endpoint returns 404. The provider examples show the same base URL for two networks. Explain and implement the dashboard recovery state using local mocks; no additional transaction or provider credential use is authorized.",
+      "sources": [
+        "bundled:references/nexus-api-application.md",
+        "https://docs.talus.network/guides/nexus-api/troubleshooting"
+      ],
+      "expected_output": "A deployment-aware syncing/recovery state with bounded projection refresh, retained transaction evidence, and no inferred finality or repeated transaction.",
+      "expectations": [
+        "The consumer verifies intended deployment/network and does not infer it from the shared example URL.",
+        "SSE and the missing row are treated as projection evidence, not transaction finality, deletion, settlement, or permission to resubmit.",
+        "Wallet/SDK writes remain separate from provider read access and require the existing transaction authority."
       ]
     }
   ]

@@ -1,5 +1,7 @@
 # Off-chain Tool implementation
 
+For a new crate or workspace member, start with [scaffolding and its completion checklist](scaffolding.md), then use this reference for the implementation boundary.
+
 ## Contract first
 
 Define the Tool FQN, version, description, input schema, output schema, error variants, timeout, and beneficiary before writing the HTTP handler. Keep the response deterministic for the same validated request and make provider failures explicit in the schema.
@@ -12,7 +14,7 @@ Keep provider I/O behind a small trait or adapter so unit tests can use a determ
 
 ## Signed HTTP
 
-Verify the exact current SDK contract for signed headers. Bind the signature to method, path, body digest, timestamp, nonce, and the configured key identity. Reject stale timestamps, duplicate nonces, altered bodies, wrong paths, missing headers, and unknown key IDs. Tests should use generated ephemeral test keys and never persist private material.
+Use the v3 contract in [verification](verification.md) and the published [Tool communication guide](https://docs.talus.network/guides/tool-development/tool-communication). The Leader signs the canonical input commitment; the Tool response signature binds that Leader signature, deterministic invocation nonce, and SHA-256 digest of canonical response BCS. Do not substitute generic method/path/timestamp signing. Cover altered commitments/signatures, unknown Leader keys, in-flight duplicates, and completed-response replay using the selected SDK's tests. Use synthetic local test keys and keep real signing material out of source and logs.
 
 ## Tests
 

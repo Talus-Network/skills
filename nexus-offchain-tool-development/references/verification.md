@@ -32,7 +32,7 @@ BIND_ADDR=127.0.0.1:8080 cargo run
 nexus tool validate offchain --url http://127.0.0.1:8080
 ```
 
-Current validation requests `/health` and requires `200 OK`, fetches `/meta`, parses the FQN/URL/description/timeout/schemas, and rejects metadata without top-level `oneOf`. Independently review the final URL syntax and non-empty description before registration because live endpoint validation and registration metadata checks are separate paths. A custom Tool `path()` is part of the URL; validate the base path that serves its `health` and `meta` routes. A successful local validation proves only the HTTP contract.
+Current validation requests `/health` and requires `200 OK`, fetches `/meta`, parses the FQN/URL/description/timeout/schemas, and rejects metadata without top-level `oneOf`. Independently review the final URL syntax and non-empty description before registration because live endpoint validation and registration metadata checks are separate paths. A custom Tool `path()` is part of the URL; validate the base path that serves its `health` and `meta` routes. A successful local validation proves health and metadata compatibility; it does not exercise `POST /invoke` or prove canonical output encoding. Invoke and decode representative success/error outputs in the local tests described in [scaffolding](scaffolding.md).
 
 ## 3. Configure signed HTTP v3 deliberately
 

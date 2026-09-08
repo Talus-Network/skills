@@ -70,9 +70,34 @@ PUBLISHED_NEXUS_DOCS_HOST = "docs.talus.network"
 PUBLISHED_NEXUS_DOCS_PATHS: frozenset[str] = frozenset(
     {
         "/guides/getting-started/setup",
+        "/guides/getting-started/prepare-onchain-development",
+        "/guides/nexus-api",
+        "/guides/nexus-api/connect-a-dapp",
+        "/guides/nexus-api/typescript-client",
+        "/guides/nexus-api/troubleshooting",
+        "/guides/nexus-api/tutorial",
+        "/guides/nexus-api/tutorial/01-get-a-key",
+        "/guides/nexus-api/tutorial/02-read-the-network",
+        "/guides/nexus-api/tutorial/03-stream-events",
+        "/guides/nexus-api/tutorial/04-assemble-the-dapp",
+        "/guides/nexus-api/tutorial/05-port-to-react",
+        "/guides/tool-development/build-offchain-tool",
+        "/guides/tool-development/build-onchain-tool",
+        "/guides/tool-development/tool-communication",
+        "/guides/tool-development/verify-offchain-tool-result",
+        "/reference/toolkit/rust",
+        "/reference/cli/tool",
         "/concepts/06-payment-vaults-reserves-and-settlement",
         "/reference/cli/task",
         "/reference/cli/tap",
+    }
+)
+PUBLISHED_NEXUS_API_HOST = "api.taluslabs.dev"
+PUBLISHED_NEXUS_API_PATHS: frozenset[str] = frozenset(
+    {
+        "/",
+        "/docs",
+        "/openapi.json",
     }
 )
 REVIEWED_OFFICIAL_SUI_DOCUMENTATION_URLS: frozenset[str] = frozenset(
@@ -312,6 +337,13 @@ def _classify_public_url(url: str, *, allow_published_documentation: bool = Fals
         if normalized_path not in PUBLISHED_NEXUS_DOCS_PATHS:
             return False, "published documentation path is not in the reviewed allowlist"
         return True, "published Nexus documentation"
+    if host == PUBLISHED_NEXUS_API_HOST:
+        if not allow_published_documentation:
+            return False, "published API documentation is allowed only in documentation contexts"
+        normalized_path = parsed.path.rstrip("/") or "/"
+        if normalized_path not in PUBLISHED_NEXUS_API_PATHS:
+            return False, "published API documentation path is not in the reviewed allowlist"
+        return True, "published Nexus API documentation"
     if host == PUBLIC_MVR_PAGE_HOST:
         if parsed.path.rstrip("/") == "/package":
             return True, "reviewed public Move Registry package base"

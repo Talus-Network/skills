@@ -1,5 +1,7 @@
 # On-chain Tool workflow
 
+For a new package, begin with [scaffolding and its completion checklist](scaffolding.md), including the supported ABI and nested-witness registration boundary.
+
 ## 1. Define the contract
 
 Choose the FQN, module/function name, input schema, output tags/payload types, witness identity, authorization mode, and exact state mutation. Preserve the public framework argument prefix and trailing mutable transaction context.

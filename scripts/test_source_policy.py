@@ -111,17 +111,82 @@ class PublicSourcePolicyTests(unittest.TestCase):
 
     def test_public_documentation_urls_are_contextual_not_source_authority(self) -> None:
         validator = _load("source_policy_documentation_context", ROOT / "scripts/validate_skills.py")
-        documentation_url = "https://" + "docs.talus.network/reference/cli/tap"
-        self.assertFalse(validator._classify_public_url(documentation_url)[0])
-        self.assertTrue(
-            validator._classify_public_url(documentation_url, allow_published_documentation=True)[0]
+        documentation_urls = tuple(
+            "https://" + "docs.talus.network" + path
+            for path in (
+                "/guides/getting-started/prepare-onchain-development",
+                "/guides/nexus-api",
+                "/guides/nexus-api/connect-a-dapp",
+                "/guides/nexus-api/typescript-client",
+                "/guides/nexus-api/troubleshooting",
+                "/guides/nexus-api/tutorial",
+                "/guides/nexus-api/tutorial/01-get-a-key",
+                "/guides/nexus-api/tutorial/02-read-the-network",
+                "/guides/nexus-api/tutorial/03-stream-events",
+                "/guides/nexus-api/tutorial/04-assemble-the-dapp",
+                "/guides/nexus-api/tutorial/05-port-to-react",
+                "/guides/tool-development/build-offchain-tool",
+                "/guides/tool-development/build-onchain-tool",
+                "/guides/tool-development/tool-communication",
+                "/guides/tool-development/verify-offchain-tool-result",
+                "/reference/toolkit/rust",
+                "/reference/cli/tool",
+            )
         )
+        api_documentation_urls = (
+            "https://" + "api.taluslabs.dev/",
+            "https://" + "api.taluslabs.dev/docs",
+            "https://" + "api.taluslabs.dev/openapi.json",
+        )
+        for url in (*documentation_urls, *api_documentation_urls):
+            with self.subTest(url=url):
+                self.assertFalse(validator._classify_public_url(url)[0])
+                self.assertTrue(
+                    validator._classify_public_url(url, allow_published_documentation=True)[0]
+                )
+
+        documentation_content = "\n".join((*documentation_urls, *api_documentation_urls))
+        with tempfile.TemporaryDirectory(prefix="source-policy-reviewed-documentation-") as directory:
+            root = Path(directory)
+            path = root / "references/page.md"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(documentation_content, encoding="utf-8")
+            errors: list[str] = []
+            validator.validate_portability(root, errors)
+            self.assertEqual(errors, [])
+
+        operational_content = "\n".join(api_documentation_urls)
+        with tempfile.TemporaryDirectory(prefix="source-policy-api-operational-") as directory:
+            root = Path(directory)
+            path = root / "scripts/prepare_sources.py"
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(operational_content, encoding="utf-8")
+            errors = []
+            validator.validate_portability(root, errors)
+            self.assertTrue(errors)
+
+        for variant in (
+            "https://" + "docs.talus.network/guides/nexus-api/unknown",
+            "https://" + "api.taluslabs.dev/unknown",
+            "https://" + "api.taluslabs.dev/docs?version=1",
+            "https://" + "api.taluslabs.dev/docs#reference",
+            "https://" + "user:secret@api.taluslabs.dev/docs",
+            "https://" + "www.api.taluslabs.dev/docs",
+            "https://" + "api.taluslabs.dev" + ":443/docs",
+        ):
+            with self.subTest(variant=variant):
+                self.assertFalse(
+                    validator._classify_public_url(
+                        variant, allow_published_documentation=True
+                    )[0]
+                )
+
         for relative in ("skill/SKILL.md", "references/page.md", "evals/evals.json"):
             with tempfile.TemporaryDirectory(prefix="source-policy-documentation-approved-") as directory:
                 root = Path(directory)
                 path = root / relative
                 path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(documentation_url, encoding="utf-8")
+                path.write_text(documentation_urls[0], encoding="utf-8")
                 errors: list[str] = []
                 validator.validate_portability(root, errors)
                 with self.subTest(kind="approved", relative=relative):
@@ -138,7 +203,7 @@ class PublicSourcePolicyTests(unittest.TestCase):
                 root = Path(directory)
                 path = root / relative
                 path.parent.mkdir(parents=True, exist_ok=True)
-                path.write_text(documentation_url, encoding="utf-8")
+                path.write_text(documentation_urls[0], encoding="utf-8")
                 errors = []
                 validator.validate_portability(root, errors)
                 with self.subTest(kind="rejected", relative=relative):

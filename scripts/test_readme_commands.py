@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import re
 from pathlib import Path
@@ -30,6 +31,37 @@ def load_helper():
     sys.modules[spec.name] = module
     spec.loader.exec_module(module)
     return module
+
+
+class TapVmArtifactRoutingTests(unittest.TestCase):
+    def test_tap_skill_separates_vm_and_artifact_gates(self) -> None:
+        skill_path = ROOT / "nexus-tap-development/SKILL.md"
+        workflow_path = ROOT / "nexus-tap-development/references/tap-workflow.md"
+        skill = skill_path.read_text(encoding="utf-8")
+        workflow = workflow_path.read_text(encoding="utf-8")
+
+        structural_heading = "## Structural DAG and skill-artifact validation"
+        self.assertIn(structural_heading, skill)
+        self.assertIn("verify_tap_artifacts.py", skill)
+        self.assertIn("do not retry it through", skill)
+        self.assertIn('"$NEXUS_BETA_CLI" tap test', skill)
+
+        vm_section = skill.split(structural_heading, 1)[0]
+        self.assertIn("## Local published-bytecode TAP tests", vm_section)
+        self.assertNotIn("DAG/skill JSON", vm_section)
+        self.assertIn("Structural DAG and skill-artifact verification", workflow)
+        self.assertIn("verify_tap_artifacts.py", workflow)
+        self.assertIn("--require-artifacts --json", workflow)
+        self.assertIn('"$NEXUS_BETA_CLI" tap test', workflow)
+
+    def test_tap_repair_eval_names_distinct_owning_gates(self) -> None:
+        eval_path = ROOT / "nexus-tap-development/evals/evals.json"
+        document = json.loads(eval_path.read_text(encoding="utf-8"))
+        repair = next(entry for entry in document["evals"] if entry["id"] == "tap-test-repair")
+        combined = " ".join([repair["prompt"], repair["expected_output"], *repair["expectations"]])
+        self.assertIn("structural artifact validator", combined)
+        self.assertIn("explicit beta VM gate", combined)
+        self.assertIn("DAG/skill JSON failure", combined)
 
 
 class SkillsReadmeCommandTests(unittest.TestCase):

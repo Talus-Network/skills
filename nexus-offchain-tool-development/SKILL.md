@@ -1,6 +1,6 @@
 ---
 name: nexus-offchain-tool-development
-description: Build, test, validate, and safely prepare registration for a Nexus off-chain HTTP Tool written in Rust. Use for external-provider integrations, Toolkit bootstrap, Tool metadata, local validation, and signed HTTP setup; do not use for Move on-chain Tools, TAPs, Task debugging, or payment tracking.
+description: Scaffold, implement, test, and validate Nexus off-chain HTTP Tools in Rust, including external-provider integrations, Toolkit metadata, canonical output encoding, and signed HTTP. Use for standalone Tools or existing Cargo workspaces.
 ---
 
 # Nexus off-chain Tool development
@@ -99,6 +99,7 @@ This boundary performs only allowlisted read-only GraphQL queries. It does not u
 
 | Task | Read |
 | --- | --- |
+| Scaffold a new Tool or add one to a Cargo workspace | [Scaffolding and completion checklist](references/scaffolding.md), then the implementation and verification references. |
 | Implement or adapt a Rust Tool, schema, FQN, external call, or tests | [implementation reference](references/implementation.md) |
 | Validate metadata, configure signed HTTP, or diagnose a boundary | [verification reference](references/verification.md) |
 | Build and verify a complete Tool | Read both references in order. |

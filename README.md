@@ -24,13 +24,19 @@ Run the validator from the checkout or installed bundle before loading a skill. 
 
 ## Skills
 
-| Skill                                                               | Use it for                                                           |
-| ------------------------------------------------------------------- | -------------------------------------------------------------------- |
-| [nexus-onchain-tool-development](nexus-onchain-tool-development/)   | Build and validate an on-chain Tool in Sui Move.                     |
-| [nexus-offchain-tool-development](nexus-offchain-tool-development/) | Build, test, and validate an off-chain HTTP Tool service.            |
-| [nexus-tap-development](nexus-tap-development/)                     | Build a Talus Agent Package (TAP) and its DAG-backed skill artifact. |
-| [nexus-onchain-task-debugging](nexus-onchain-task-debugging/)       | Trace Task, Occurrence, Execution, Tool, and payment evidence.       |
-| [nexus-cli-payment-tracking](nexus-cli-payment-tracking/)           | Reconcile funding, reserves, charges, refunds, and Tool revenue.     |
+| Skill                                                               | Use it for                                                                                 |
+| ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| [nexus-onchain-tool-development](nexus-onchain-tool-development/)   | Build and validate an on-chain Tool in Sui Move.                                           |
+| [nexus-offchain-tool-development](nexus-offchain-tool-development/) | Build, test, and validate an off-chain HTTP Tool service.                                  |
+| [nexus-tap-development](nexus-tap-development/)                     | Build a TAP and its artifacts, and a Nexus API dashboard/dApp/backend for an existing TAP. |
+| [nexus-onchain-task-debugging](nexus-onchain-task-debugging/)       | Trace Task, Occurrence, Execution, Tool, and payment evidence.                             |
+| [nexus-cli-payment-tracking](nexus-cli-payment-tracking/)           | Reconcile funding, reserves, charges, refunds, and Tool revenue.                           |
+
+## TAP applications and Tool scaffolding
+
+For an application over an existing TAP, use [Nexus API application development](nexus-tap-development/references/nexus-api-application.md): hosted REST projections, paginated execution history, replayable SSE, a server-only provider key, and deterministic frontend/relay tests. App-only work does not require a Move package or CLI/source setup. The public [Nexus API guide](https://docs.talus.network/guides/nexus-api) and provider reference define the selected deployment's consumer contract.
+
+The Tool skills include the full scaffold-to-implementation workflow and completion checks for [Rust HTTP Tools](nexus-offchain-tool-development/references/scaffolding.md) and [Sui Move Tools](nexus-onchain-tool-development/references/scaffolding.md). Start with the released public CLI scaffold, then implement real behavior and verify it using the matching skill. No separate plugin runtime is required.
 
 ## Safety model
 

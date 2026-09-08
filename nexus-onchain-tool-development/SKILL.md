@@ -1,6 +1,6 @@
 ---
 name: nexus-onchain-tool-development
-description: Build, test, and safely integrate Nexus on-chain Tools in Sui Move; use when implementing an execute module, witness/result schema, registration inputs, or a read-only deployment check.
+description: Scaffold, implement, and test Nexus on-chain Tools in Sui Move, including execute ABI, verified workflow authorization, witness/result schemas, published-bytecode tests, and registration preparation.
 ---
 
 # Nexus on-chain Tool development
@@ -20,6 +20,8 @@ Before any setup check, scaffolding, source preparation or archive acquisition, 
 For version-sensitive setup, use the published [Developer Setup](https://docs.talus.network/guides/getting-started/setup) and verify it with `scripts/docs_website.py`; do not use a source-repository checkout as the setup authority.
 
 ## Public source preparation
+
+For local tests that call Nexus functions, install the additive beta CLI from the [Prepare for On-Chain Development](https://docs.talus.network/guides/getting-started/prepare-onchain-development), set `NEXUS_BETA_CLI` to its explicit binary path, and verify `"$NEXUS_BETA_CLI" tap test --help` before using it. Do not prepend the beta directory to `PATH`; unqualified `nexus` commands remain the released CLI. The beta command is supplied by the public `nexus-sdk` `main` branch, not by adding a released `nexus-sdk` library dependency.
 
 Read [the public source map](references/source-map.md) and [the workflow](references/workflow.md). In a fresh consumer workspace, prepare only the three approved public repositories, including the matching Sui framework source:
 
@@ -105,7 +107,21 @@ Only chain identity, checkpoint, package/object, and normalized Move reads are a
 - Keep SUI gas, registration collateral, Tool price, Task reserve, and Execution payment separate.
 - Use placeholders for package IDs, object IDs, FQNs, witnesses, capabilities, and recipients until a target deployment supplies them.
 
+## Local published-bytecode test
+
+After the package-owned `sui move build`, run plain `sui move test` only for tests that do not call Nexus functions. When tests call published Nexus functions, set `NEXUS_BETA_CLI` to the explicit binary path from the published Developer Setup and run:
+
+```bash
+"$NEXUS_BETA_CLI" tap test --path . --build-env testnet
+```
+
+Use `"$NEXUS_BETA_CLI" tap test --path . --list --build-env testnet` to discover tests and one named filter to shorten diagnosis, then rerun the unfiltered command. The harness reads public Nexus bytecode for the selected environment, overlays only `#[test_only]` extensions in memory, and runs a local Sui VM. It requires network read access but no wallet, signer, gas, publication, registration, binding, scheduling, settlement, or asset movement.
+
+Treat the first concrete compiler, linker, ABI/layout, witness/result, authorization, input-commitment, output, or finalization error as the diagnosis target. Make the smallest source or test-arrangement repair, rerun the same filtered gate, and finish with the unfiltered gate. A green result proves only the exercised published calls and local arrangement; it does not prove Tool registration or live workflow execution.
+
 ## Validation and deployment boundary
+
+The published-bytecode harness above is the additional local check for tests that call Nexus functions; keep its result separate from the structural and package-owned evidence described below.
 
 Run Move build/test, the bundle's compiled/artifact validators, and pure application tests in disposable directories. These prove syntax, ABI shape, call-graph order, and cross-file consistency only. Registration, package publication, DAG binding, scheduling, and any asset movement are shared-network mutations that require explicit authorization, current chain identity, exact IDs, signer/capability custody, gas, and authoritative post-state readback.
 
@@ -113,7 +129,7 @@ Run Move build/test, the bundle's compiled/artifact validators, and pure applica
 
 | Request | Read |
 | --- | --- |
-| Scaffold or implement a Move Tool | [workflow](references/workflow.md) |
+| Scaffold or implement a Move Tool | [Scaffolding and completion checklist](references/scaffolding.md), then [workflow](references/workflow.md). |
 | Choose authorization or witness handling | [workflow](references/workflow.md) |
 | Review public ABI/dependency provenance | [source map](references/source-map.md) |
 | Connect a Tool to a TAP | `nexus-tap-development` and its mixed-tool reference |

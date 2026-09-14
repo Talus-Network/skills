@@ -1,10 +1,10 @@
 {
   "skill_name": "nexus-tap-development",
-  "source_constraint": "Use the six reviewed public Move Registry packages for network-facing Nexus Move dependencies, repository-owned TAP patterns, and the three approved anonymous public repositories (Nexus SDK, Nexus Move Packages, and the pinned Sui framework source) for offline closure, plus explicit read-only Sui testnet evidence. Do not use private repositories, wallets, credentials, or a network mutation. Application-only REST/SSE work uses the bundled API reference, published Nexus API guides, and provider API reference with local mocks; it does not require Move dependencies or provider credentials.",
+  "source_constraint": "Use repository-owned TAP fixtures and guidance, approved anonymous public Nexus SDK, Nexus Move Packages, and pinned Sui framework sources, published Nexus API documentation, and explicit read-only Sui Testnet evidence. Keep application projections, structural validators, beta VM tests, and mutations separate; do not use private sources, credentials, or unapproved writes.",
   "evals": [
     {
       "id": "tap-local-package",
-      "prompt": "In a fresh isolated directory, build a TAP with package-owned state, direct and delayed DAG paths, a skill artifact, a public Move dependency closure, pure tests, and structural artifact validation.",
+      "prompt": "Use the $nexus-tap-development skill. In a fresh isolated directory, build a TAP with package-owned state, direct and delayed DAG paths, a skill artifact, a public Move dependency closure, pure tests, and structural artifact validation.",
       "sources": [
         "https://github.com/Talus-Network/nexus-sdk/tree/main/cli/src/tap",
         "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages",
@@ -24,14 +24,16 @@
         "Use the bundled direct and delayed fixture packages and their bound artifacts as repository-owned starting points.",
         "No deployment ID, capability, credential, or mutation is invented.",
         "When tests call published Nexus functions, the explicit beta VM gate is used; DAG and skill-artifact JSON are checked separately with verify_tap_artifacts.py."
-      ]
+      ],
+      "trigger": "explicit",
+      "should_trigger": true
     },
     {
       "id": "tap-test-repair",
       "prompt": "In a fresh isolated consumer workspace, create a TAP with a package-owned Tool, DAG, skill artifact, and local tests. A seeded local failure occurs in one of the owning validation gates. Diagnose the failure from the first concrete command output, make the smallest repair, rerun the owning gate, and report the boundary before any deployment action.",
       "sources": [
-        "bundled:references/tap-workflow.md",
-        "bundled:references/demo-tap.md",
+        "bundled:nexus-tap-development/references/tap-workflow.md",
+        "bundled:nexus-tap-development/references/demo-tap.md",
         "https://github.com/Talus-Network/nexus-sdk/blob/main/cli/src/tap/tap_test.rs",
         "https://github.com/Talus-Network/nexus-move-packages/blob/main/docs/tap_development.md",
         "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages"
@@ -41,7 +43,9 @@
         "The agent runs package-owned Move tests, the structural artifact validator for DAG/skill JSON, and the explicit beta VM gate when tests call published Nexus functions.",
         "The agent does not infer the defective DAG, skill, port, path, commitment, or policy field from the prompt; it reports the earliest concrete validator or VM message.",
         "The agent changes only the implicated artifact, package source, or test arrangement, reruns the same owning gate unfiltered, and does not send a DAG/skill JSON failure to the VM or a VM failure to the artifact validator."
-      ]
+      ],
+      "trigger": "implicit",
+      "should_trigger": true
     },
     {
       "id": "tap-testnet-observation",
@@ -49,7 +53,6 @@
       "sources": [
         "bundled:scripts/testnet_evidence.py",
         "https://github.com/Talus-Network/nexus-sdk/tree/main/cli/src/tap",
-        "bundled:scripts/testnet_evidence.py",
         "https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages"
       ],
       "expected_output": "A read-only testnet evidence report or a concrete unavailable-evidence result, explicitly separated from local structural validation.",
@@ -57,28 +60,32 @@
         "The report contains endpoint, testnet label, allowlisted methods, response digests, and collection time.",
         "GraphQL errors, wrong endpoint, malformed identifiers, and incomplete responses fail closed.",
         "The procedure does not publish, register, bind, schedule, settle, or submit a transaction."
-      ]
+      ],
+      "trigger": "implicit",
+      "should_trigger": true
     },
     {
       "id": "tap-grill-ambiguous",
-      "prompt": "Create a TAP with a Tool and a workflow that eventually moves value. Begin from this incomplete request.",
+      "prompt": "Build a TAP around a Move-backed data step. The package, DAG edges, artifact boundary, and live-write intent are missing. Identify only the material decisions that change the work.",
       "sources": [
-        "bundled:references/tap-workflow.md",
+        "bundled:nexus-tap-development/references/tap-workflow.md",
         "https://github.com/Talus-Network/nexus-sdk/tree/main/cli/src/tap"
       ],
-      "expected_output": "Exactly one recommended material question and a no-action stop until the TAP goal, DAG/package scope, authorization, mutation boundary, acceptance evidence, and compact design are shared.",
+      "expected_output": "A concise clarification request for missing package, DAG, or authorization decisions, with source-answerable facts resolved read-only and dependent work paused.",
       "expectations": [
-        "The agent asks one unresolved material question at a time and includes a recommended answer with its reason.",
-        "The agent does not scaffold a package or artifacts, acquire sources, build, test, write, publish, register, schedule, or move value before the contract and design are explicit.",
-        "Facts answerable from approved public SDK/Move Packages/Sui or read-only Testnet sources are resolved read-only rather than turned into unnecessary user questions."
-      ]
+        "The agent asks only about unresolved material behavior, authority, or acceptance decisions and gives a reversible recommended assumption.",
+        "The agent does not scaffold a package or artifacts, acquire sources, build, test, write, publish, register, schedule, or move value before the dependent contract decision is resolved.",
+        "Facts answerable from approved public SDK, Move Packages, Sui, or read-only Testnet sources are resolved read-only rather than turned into user questions."
+      ],
+      "trigger": "implicit",
+      "should_trigger": true
     },
     {
       "id": "tap-grill-fully-specified",
       "prompt": "Build a TAP named com.example.weather.workflow@1. Goal: run a direct fetch step and a delayed verification step over package-owned WeatherState. Requirements: define DAG vertices/edges/ports, bind fixed Tools and policies, preserve input commitment, test direct and delayed branches, and keep structural/repository-owned/read-only Testnet evidence separate. Inputs: the bundled direct and delayed fixture patterns, approved public SDK/Move Packages/Sui sources, and operator-supplied placeholder deployment IDs. In scope: the TAP package, Move package, DAG, skill artifact, dependency provenance, pure tests, and structural validators. Non-goals: publication, registration, binding, scheduling, settlement, upgrades, signing, credentials, or live asset movement. Authorization: local files/build/test and read-only official Testnet GraphQL are allowed; no wallet, environment switch, source mutation, or shared-network write is authorized. Acceptance: direct/delayed fixture tests, DAG/artifact consistency, public dependency closure, cleanup, validator output, and explicit evidence limitations. Design: record the contract, adapt repository-owned fixtures, validate artifacts, then run isolated local tests and optional read-only evidence. Use approved public sources and do not ask a redundant question.",
       "sources": [
-        "bundled:references/tap-workflow.md",
-        "bundled:references/demo-tap.md",
+        "bundled:nexus-tap-development/references/tap-workflow.md",
+        "bundled:nexus-tap-development/references/demo-tap.md",
         "https://github.com/Talus-Network/nexus-sdk/tree/main/cli/src/tap",
         "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages",
         "https://www.moveregistry.com/package/@talus/nexus-interface",
@@ -87,16 +94,18 @@
       ],
       "expected_output": "A recorded complete contract and compact design followed by the repository-owned TAP/fixture/validator workflow, with no redundant question and no live-network mutation.",
       "expectations": [
-        "The complete goal, requirements, inputs/boundary, scope, non-goals, authorization, acceptance evidence, and design are recorded before development actions.",
-        "No material clarification question is asked because the request already specifies the contract; public-source facts are resolved from approved sources.",
+        "The supplied instructions and existing context are assembled into a compact contract before development actions.",
+        "No clarification question is asked because no material behavior, authority, or acceptance decision remains unresolved; approved public-source facts are checked as needed.",
         "The resulting TAP preserves direct/delayed coverage, artifact consistency, cleanup, public dependency provenance, and the distinction between structural and read-only Testnet evidence."
-      ]
+      ],
+      "trigger": "implicit",
+      "should_trigger": true
     },
     {
       "id": "tap-api-app-only",
       "prompt": "Build a React Run Watcher for an existing TAP. Show a filtered execution list, selected execution detail and event history, and live refresh after execution events. The application directory and existing Agent/DAG identifiers are supplied by the caller. Use a same-origin server relay and deterministic mock responses; no real provider key, Move package, source download, deployment, or wallet transaction is authorized. Include loading, error, empty, syncing, and explicit retry states, typecheck/build the app, and test the read and replay behavior.",
       "sources": [
-        "bundled:references/nexus-api-application.md",
+        "bundled:nexus-tap-development/references/nexus-api-application.md",
         "https://docs.talus.network/guides/nexus-api/tutorial/05-port-to-react",
         "https://docs.talus.network/guides/nexus-api/typescript-client"
       ],
@@ -106,13 +115,15 @@
         "The provider key stays server-side and a synthetic-key bundle scan proves it is absent from emitted browser assets.",
         "Execution event history uses the execution-scoped paginated route, while SSE uses events:read separately from executions:read.",
         "Validated events trigger REST refresh and React cleanup/retry creates an explicit generation without stale requests or cursor loss."
-      ]
+      ],
+      "trigger": "implicit",
+      "should_trigger": true
     },
     {
       "id": "tap-api-page-replay-recovery",
       "prompt": "Review and repair a TAP application consumer with mocked API responses. Its execution list spans seven pages; one next_token is zero and a later page gets 429 before succeeding. The SSE fixture contains a mismatched transport/payload ID, a valid frame, a duplicate, a backwards ID, and a malformed frame. Reconnect once, then simulate 403. Keep the provider key confined to the server relay and preserve enough diagnostics to explain the stopped state. Only local app edits and tests are authorized.",
       "sources": [
-        "bundled:references/nexus-api-application.md",
+        "bundled:nexus-tap-development/references/nexus-api-application.md",
         "https://docs.talus.network/guides/nexus-api/typescript-client"
       ],
       "expected_output": "A complete, duplicate-free list and replay state advanced only by validated increasing event IDs, with bounded retries and terminal authorization recovery.",
@@ -121,13 +132,15 @@
         "A failed page retries without yielding duplicates, honors Retry-After, and successful pages reset the retry budget.",
         "Invalid, mismatched, duplicate, and backwards event IDs never advance the stored replay cursor.",
         "Reconnect refreshes REST and forwards the saved cursor; 403 stops reconnecting until explicit credential recovery."
-      ]
+      ],
+      "trigger": "contextual",
+      "should_trigger": true
     },
     {
       "id": "tap-api-write-and-projection-boundary",
       "prompt": "A TAP dashboard receives an ExecutionFinished SSE frame immediately after a user-approved wallet transaction, but the execution detail endpoint returns 404. The provider examples show the same base URL for two networks. Explain and implement the dashboard recovery state using local mocks; no additional transaction or provider credential use is authorized.",
       "sources": [
-        "bundled:references/nexus-api-application.md",
+        "bundled:nexus-tap-development/references/nexus-api-application.md",
         "https://docs.talus.network/guides/nexus-api/troubleshooting"
       ],
       "expected_output": "A deployment-aware syncing/recovery state with bounded projection refresh, retained transaction evidence, and no inferred finality or repeated transaction.",
@@ -135,7 +148,56 @@
         "The consumer verifies intended deployment/network and does not infer it from the shared example URL.",
         "SSE and the missing row are treated as projection evidence, not transaction finality, deletion, settlement, or permission to resubmit.",
         "Wallet/SDK writes remain separate from provider read access and require the existing transaction authority."
-      ]
+      ],
+      "trigger": "implicit",
+      "should_trigger": true
+    },
+    {
+      "id": "tap-negative-payment-reconciliation",
+      "expected_skill": "nexus-cli-payment-tracking",
+      "trigger": "implicit",
+      "prompt": "Reconcile a Task reserve, ExecutionPayment budget, Tool charge, priority fee, refund, and Agent vault from exact read-only records. No TAP package, DAG, dashboard, or API relay is being built.",
+      "sources": [
+        "bundled:nexus-cli-payment-tracking/references/payment-ledger.md",
+        "https://docs.talus.network/concepts/06-payment-vaults-reserves-and-settlement"
+      ],
+      "expected_output": "The CLI payment-tracking skill is selected; TAP development is not triggered.",
+      "expectations": [
+        "The request routes to payment reconciliation rather than TAP package or application work.",
+        "No DAG, skill artifact, REST/SSE relay, or fixture is invented."
+      ],
+      "should_trigger": false
+    },
+    {
+      "id": "tap-negative-offchain-tool",
+      "trigger": "negative",
+      "prompt": "Create a standalone Rust HTTP Tool for an external provider with bounded injectable I/O, externally tagged output, signed HTTP replay checks, and key-free metadata. No TAP package or application is involved.",
+      "sources": [
+        "bundled:nexus-offchain-tool-development/references/scaffolding.md",
+        "https://docs.talus.network/guides/tool-development/build-offchain-tool"
+      ],
+      "expected_output": "The off-chain Tool skill is selected; TAP development is not triggered.",
+      "expectations": [
+        "The request routes to off-chain Tool development rather than TAP package or API work.",
+        "No DAG, skill artifact, REST/SSE relay, or TAP fixture is invented."
+      ],
+      "should_trigger": false,
+      "expected_skill": "nexus-offchain-tool-development"
+    },
+    {
+      "id": "tap-routine-artifact-review",
+      "prompt": "Review an existing TAP test failure with a supplied package, DAG, and skill artifact. Run the owning structural DAG/skill-artifact validator, repair the implicated fixture or artifact, and rerun the same local gate; do not route a structural failure to the beta VM command.",
+      "sources": [
+        "bundled:nexus-tap-development/references/tap-workflow.md",
+        "bundled:nexus-tap-development/references/demo-tap.md"
+      ],
+      "expected_output": "A focused structural artifact repair with the owning validator rerun and evidence kept separate from published-bytecode VM results.",
+      "expectations": [
+        "The routine review proceeds from supplied context and reversible assumptions without a ceremonial contract question.",
+        "DAG and skill-artifact consistency is checked by verify_tap_artifacts.py, while any published-bytecode VM gate remains a separate owning check."
+      ],
+      "trigger": "implicit",
+      "should_trigger": true
     }
   ]
 }

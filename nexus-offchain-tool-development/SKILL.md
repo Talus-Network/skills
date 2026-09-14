@@ -1,91 +1,34 @@
 ---
 name: nexus-offchain-tool-development
-description: Scaffold, implement, test, and validate Nexus off-chain HTTP Tools in Rust, including external-provider integrations, Toolkit metadata, canonical output encoding, and signed HTTP. Use for standalone Tools or existing Cargo workspaces.
+description: Build, test, and verify standalone Rust HTTP Tools for Nexus external-provider workflows, including bounded provider I/O, stable schemas, secret-free metadata, signed HTTP v3, replay protection, and registration preparation. Use for off-chain Tool services; route Move Tools, TAP applications, payment, or diagnosis elsewhere.
 ---
 
 # Nexus off-chain Tool development
 
-Use this skill for a Rust HTTP service that a Nexus Leader invokes during a workflow. It covers the Tool contract, schema and FQN design, external dependency seams, deterministic tests, Toolkit bootstrap, metadata validation, and signed HTTP. An off-chain Tool is appropriate for external APIs or computation unavailable on chain; on-chain state or asset mutation belongs in the on-chain Tool skill.
+Use this skill for the Rust HTTP service that Nexus Leader invokes during a workflow. It covers Tool contract and schema/FQN design, external dependency seams, deterministic tests, Toolkit metadata, signed HTTP, and safe registration preparation. On-chain state or asset mutation belongs in [on-chain Tool development](https://docs.talus.network/guides/tool-development/build-onchain-tool); an existing TAP UI/API belongs in [API application development](https://docs.talus.network/guides/nexus-api).
 
-## Embedded `$grill-me` requirements/design phase
+## Task contract before setup
 
-Before any setup check, scaffolding, source preparation or archive acquisition, build, test, metadata generation, server launch, file write, publication, registration, scheduling, signing, settlement, or network mutation, complete this self-contained phase inside this Skill:
+Before setup, source preparation, build, test, metadata generation, server launch, file writes, or shared-network actions, assemble a compact task contract from the supplied instructions, existing project and conversation context, approved public source facts, and reasonable reversible assumptions. Capture the goal and outcome, observable requirements, inputs and integration boundary, in-scope crate/module/file scope, non-goals, authorization and network/write boundary, acceptance evidence, and a compact implementation design.
 
-1. Record a compact shared contract covering the goal/outcome, requirements and observable behavior, inputs and integration boundary, in-scope deliverable/file scope, non-goals, authorization plus network/write boundary, acceptance evidence/tests, and a compact implementation design.
-2. Find the earliest unresolved material decision. Ask exactly one question at a time, include a recommended answer and why, wait for the answer, and update the contract. Do not ask about facts answerable from approved public Docs, SDK, Move Packages, Sui, or read-only Testnet sources; resolve those facts read-only and record the authority instead.
-3. If the request already supplies every field, record the contract and design, state that no material question remains, and continue without an unnecessary confirmation question.
-4. Until the contract and compact design are explicit and shared, stop: do not run development commands, create or edit project files, acquire source archives, build, test, generate metadata, launch a service, or perform any shared-network action. This phase is embedded here; do not install or invoke another skill for it.
-5. After stating `shared understanding complete`, continue with the existing public-source, secret-safe, deterministic local-test, and explicitly authorized registration boundaries below.
+Route the request before setup and read only the task-relevant references. Ask one concise question only when an unresolved material behavior, authority, or acceptance decision changes the work. Pause dependent work while that answer is pending, and continue useful authorized independent reads or checks. Resolve facts answerable from approved public Docs, SDK, Move Packages, Sui, or read-only Testnet sources without turning them into user questions. When the contract is sufficient, proceed; there is no default grilling ritual or required phrase.
 
-For version-sensitive setup, use the published [Developer Setup](https://docs.talus.network/guides/getting-started/setup) and verify it with `scripts/docs_website.py`; public repositories are the only source authorities.
+## Route before setup
 
-## Public source and test evidence
+| Request | Route |
+| --- | --- |
+| Rust HTTP Tool with external provider I/O, metadata, or signed HTTP | Continue here. |
+| Sui Move Tool with `execute`, witness/result, or on-chain state | Use [on-chain Tool development](https://docs.talus.network/guides/tool-development/build-onchain-tool). |
+| TAP package/artifacts or an existing TAP REST/SSE application | Use [TAP package development](https://docs.talus.network/guides/tap-development/build-tap-move-package) or [API application development](https://docs.talus.network/guides/nexus-api). |
+| Read-only Execution diagnosis or payment reconciliation | Use [on-chain Task debugging](https://docs.talus.network/guides/agent-usage/execute-and-settle-agent) or [CLI payment tracking](https://docs.talus.network/guides/tokenomics/fund-agent-and-user-executions). |
 
-Use the bundle-owned `scripts/prepare_sources.py` only from a fresh consumer workspace. Its normal public selection is the three pinned public archives: Nexus SDK, Nexus Move Packages, and the matching Sui framework source:
+For version-sensitive setup, use the published [Developer Setup](https://docs.talus.network/guides/getting-started/setup) and `scripts/docs_website.py`; public repositories are source authorities, not private checkouts.
 
-```bash
-SKILLS_BUNDLE_ROOT="${SKILLS_BUNDLE_ROOT:?Set SKILLS_BUNDLE_ROOT to this installed Skills bundle root}"
-SOURCE_HELPER="$SKILLS_BUNDLE_ROOT/scripts/prepare_sources.py"
-SOURCE_MANIFEST=""
-cleanup_sources() {
-  status="${1:-$?}"
-  trap - EXIT INT TERM
-  cleanup_status=0
-  if [ -n "${SOURCE_MANIFEST:-}" ]; then
-    python3 "$SOURCE_HELPER" cleanup --manifest "$SOURCE_MANIFEST" || cleanup_status=$?
-  fi
-  if [ "$cleanup_status" -ne 0 ]; then
-    printf 'source cleanup failed (status %s)\n' "$cleanup_status" >&2
-    if [ "$status" -eq 0 ]; then
-      status="$cleanup_status"
-    fi
-  fi
-  exit "$status"
-}
-trap cleanup_sources EXIT
-trap 'cleanup_sources 130' INT
-trap 'cleanup_sources 143' TERM
-source_prepare_status=0
-SOURCE_MANIFEST=""
-SOURCE_MANIFEST="$(python3 "$SOURCE_HELPER" prepare --only nexus-sdk --only nexus-move-packages --only sui --print-manifest-path)" || source_prepare_status=$?
-if [ "$source_prepare_status" -ne 0 ] || [ -z "$SOURCE_MANIFEST" ]; then
-  SOURCE_MANIFEST=""
-  if [ "$source_prepare_status" -eq 0 ]; then source_prepare_status=1; fi
-  printf 'source preparation failed (status %s)\n' "$source_prepare_status" >&2
-  exit "${source_prepare_status:-1}"
-fi
-SDK_ROOT=""
-sdk_root_status=0
-SDK_ROOT="$(python3 "$SOURCE_HELPER" root --manifest "$SOURCE_MANIFEST" --repo nexus-sdk)" || sdk_root_status=$?
-if [ "$sdk_root_status" -ne 0 ] || [ -z "$SDK_ROOT" ]; then
-  SDK_ROOT=""
-  if [ "$sdk_root_status" -eq 0 ]; then sdk_root_status=1; fi
-  printf 'nexus-sdk root resolution failed (status %s)\n' "$sdk_root_status" >&2
-  exit "${sdk_root_status:-1}"
-fi
-MOVE_PACKAGES_ROOT=""
-move_packages_root_status=0
-MOVE_PACKAGES_ROOT="$(python3 "$SOURCE_HELPER" root --manifest "$SOURCE_MANIFEST" --repo nexus-move-packages)" || move_packages_root_status=$?
-if [ "$move_packages_root_status" -ne 0 ] || [ -z "$MOVE_PACKAGES_ROOT" ]; then
-  MOVE_PACKAGES_ROOT=""
-  if [ "$move_packages_root_status" -eq 0 ]; then move_packages_root_status=1; fi
-  printf 'nexus-move-packages root resolution failed (status %s)\n' "$move_packages_root_status" >&2
-  exit "${move_packages_root_status:-1}"
-fi
-SUI_ROOT=""
-sui_root_status=0
-SUI_ROOT="$(python3 "$SOURCE_HELPER" root --manifest "$SOURCE_MANIFEST" --repo sui)" || sui_root_status=$?
-if [ "$sui_root_status" -ne 0 ] || [ -z "$SUI_ROOT" ]; then
-  SUI_ROOT=""
-  if [ "$sui_root_status" -eq 0 ]; then sui_root_status=1; fi
-  printf 'sui root resolution failed (status %s)\n' "$sui_root_status" >&2
-  exit "${sui_root_status:-1}"
-fi
-```
+## Public source and Testnet evidence
 
-Use repository-relative paths below verified roots. The public references are [Nexus SDK](https://github.com/Talus-Network/nexus-sdk), [Nexus Move Packages](https://github.com/Talus-Network/nexus-move-packages), and the matching [Sui framework source](https://github.com/MystenLabs/sui); stable workflow guidance is bundled in this repository. If an archive or required marker is unavailable, report the source-evidence gap instead of locating another source.
+Choose references by the requested work: read [implementation](references/implementation.md) for the Tool contract, provider seams, schemas, and output variants; read [verification](references/verification.md) for metadata, signed HTTP, endpoint, or registration checks; and read [scaffolding](references/scaffolding.md) for a new Tool skeleton or structural test harness. Read [the source-preparation contract](references/source-preparation.md) only when a version-sensitive SDK, Move, or Sui source question remains after approved public Docs and read-only evidence; then use `scripts/prepare_sources.py` from a fresh consumer workspace for only the reviewed public SDK, Move Packages, and matching Sui framework archives. Preserve manifest cleanup and stop at an evidence gap.
 
-For deployed package/module/object facts, call the bundled helper with an explicit testnet URL:
+For deployed package, module, or object facts, use the bundle-root `scripts/testnet_evidence.py` helper with the explicit official Testnet GraphQL endpoint:
 
 ```bash
 python3 "$SKILLS_BUNDLE_ROOT/scripts/testnet_evidence.py" \
@@ -93,27 +36,23 @@ python3 "$SKILLS_BUNDLE_ROOT/scripts/testnet_evidence.py" \
   --package-id 0x<package-id> --module <module-name>
 ```
 
-This boundary performs only allowlisted read-only GraphQL queries. It does not use a wallet, active environment, credentials, or transaction path. Offline Rust tests and local HTTP mocks remain the default; report unavailable testnet evidence explicitly.
-
-## Route by task
-
-| Task | Read |
-| --- | --- |
-| Scaffold a new Tool or add one to a Cargo workspace | [Scaffolding and completion checklist](references/scaffolding.md), then the implementation and verification references. |
-| Implement or adapt a Rust Tool, schema, FQN, external call, or tests | [implementation reference](references/implementation.md) |
-| Validate metadata, configure signed HTTP, or diagnose a boundary | [verification reference](references/verification.md) |
-| Build and verify a complete Tool | Read both references in order. |
-| Feed this Tool into a TAP-owned on-chain state transition | Route the combined DAG/state workflow through `nexus-tap-development` and its mixed-tool reference. |
+Public state does not prove provider invocation, signed-result acceptance, registration, or payment settlement.
 
 ## Safety contract
 
-- Classify every command as read-only inspection, local build/test, local server state, or shared-network mutation.
-- Default to an isolated project, deterministic mocks, bounded timeouts, and dry-run/read-only inspection.
-- Keep secrets in runtime configuration or a secret manager; never put private keys, API tokens, or signing material in source, fixtures, logs, or metadata.
-- Validate URL scheme/host, timeout, response size, status, content type, JSON shape, required output fields, and error behavior before accepting an external response.
-- Test success, provider failure, malformed payload, timeout, signature/header tampering, replay, and schema mismatch.
-- Local `http://` is for development validation only. Production requires an operator-supplied reachable HTTPS endpoint; TLS and signed HTTP are separate protections.
+- Classify commands as read-only inspection, local build/test, local server operation, or shared-network mutation. Default to an isolated project, deterministic mocks, bounded timeouts, and dry-run/read-only inspection.
+- Keep private keys, API tokens, signing material, and provider credentials in runtime configuration or a secret manager. Never put them in source, fixtures, logs, metadata, browser output, or shell arguments.
+- Validate URL scheme/host, timeout, response size, status, content type, JSON shape, required output fields, and error behavior before accepting provider data.
+- Test success, provider failure, malformed payload, timeout, schema mismatch, signature/header tampering, and replay. Local `http://` validation is for development; production requires an operator-supplied HTTPS endpoint.
 
-## Registration boundary
+## Metadata and invocation evidence
 
-Registration is a shared-network mutation. Before any authorized operation, verify the exact public FQN, schema, endpoint, beneficiary, collateral, gas budget, signer/capability custody, and returned effects/readback. A successful command or digest is not proof without authoritative post-state. If the selected SDK/public source or testnet evidence is unavailable, stop with the earliest concrete gap.
+Read [the scaffolding reference](references/scaffolding.md) before reviewing an existing Tool or changing its output. Every output variant, including a zero-port error variant, uses externally tagged named fields; a unit variant may pass metadata `oneOf` while failing canonical BCS invocation encoding. Write `cargo run -- --meta` output to a temporary file outside the project, extract the single metadata object, and validate the selected Tool's full URL including its `path()` suffix. Metadata/schema validation is separate from actual `/invoke` execution and canonical BCS decoding; exercise representative success/error outputs in local tests. `--meta` must not require provider configuration, credentials, or network I/O, while service startup still validates required runtime configuration.
+
+## Signed HTTP and registration boundary
+
+Signed HTTP v3 authenticates the canonical schema-ordered input commitment and canonical response bytes with a deterministic invocation nonce; it does not replace HTTPS. Test missing/tampered/wrong signatures and replay locally with the current Toolkit contract. Registration is a shared-network mutation: verify exact FQN, schema, final endpoint/path, beneficiary, collateral, gas, signer/capability custody, authorization, and authoritative post-state before and after an explicitly authorized operation. A successful command, digest, or metadata object alone is not registration proof.
+
+## Completion standard
+
+A Tool is locally ready when locked build/test/lint/format checks pass, every output variant and health/metadata/invocation path has deterministic coverage, metadata is secret-free, the selected custom path validates, and any signed HTTP, registration, or staging evidence is stated separately as run, unavailable, or pending.

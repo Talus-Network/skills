@@ -15,24 +15,66 @@ Never use a localhost URL as a production registration target. A request to buil
 
 ## 2. Inspect metadata without mutating the network
 
-The Toolkit's `--meta` branch prints a pretty JSON array, including for a single Tool, and its URL is a `http://localhost` placeholder derived from `path()`. The CLI's `--from-meta` parser currently reads one metadata object, not that array. For one Tool, normalize the output into a temporary reviewed file outside the project:
+The Toolkit's `--meta` branch prints a pretty JSON array, including for a single Tool, and its URL is a `http://localhost` placeholder derived from `path()`. The CLI's `--from-meta` parser currently reads one metadata object, not that array. For one Tool, normalize the output into a temporary reviewed directory outside the project. Keep this block in a subshell so its cleanup traps do not replace a parent source-preparation trap; set `TOOL_MANIFEST` to the Tool project's `Cargo.toml`:
 
 ```bash
-cargo run -- --meta > meta-array.json
-jq -e 'type == "array" and length == 1' meta-array.json >/dev/null
-jq -e '.[0]' meta-array.json > meta.json
+(
+  set -eu
+  if [ -z "${TOOL_MANIFEST:-}" ]; then
+    printf 'TOOL_MANIFEST must name the Tool project Cargo.toml\n' >&2
+    exit 1
+  fi
+  manifest_dir="$(dirname -- "$TOOL_MANIFEST")"
+  manifest_file="$(basename -- "$TOOL_MANIFEST")"
+  if ! manifest_dir="$(cd -- "$manifest_dir" && pwd -P)"; then
+    printf 'TOOL_MANIFEST directory cannot be resolved\n' >&2
+    exit 1
+  fi
+  TOOL_MANIFEST="$manifest_dir/$manifest_file"
+  if [ ! -f "$TOOL_MANIFEST" ]; then
+    printf 'TOOL_MANIFEST does not name a file: %s\n' "$TOOL_MANIFEST" >&2
+    exit 1
+  fi
+  metadata_dir=""
+  if ! metadata_dir="$(mktemp -d "${TMPDIR:-/tmp}/nexus-tool-meta.XXXXXX")" \
+      || [ -z "$metadata_dir" ] || [ ! -d "$metadata_dir" ]; then
+    printf 'metadata temporary directory creation failed\n' >&2
+    exit 1
+  fi
+  cleanup_metadata() {
+    status="$?"
+    trap - EXIT INT TERM
+    cleanup_status=0
+    rm -rf -- "$metadata_dir" || cleanup_status="$?"
+    if [ "$cleanup_status" -ne 0 ]; then
+      printf 'metadata cleanup failed (status %s)\n' "$cleanup_status" >&2
+      [ "$status" -eq 0 ] && status="$cleanup_status"
+    fi
+    exit "$status"
+  }
+  trap cleanup_metadata EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
+
+  cd -- "$metadata_dir" || exit 1
+  cargo run --manifest-path "$TOOL_MANIFEST" -- --meta > meta-array.json
+  jq -e 'type == "array" and length == 1' meta-array.json >/dev/null
+  jq -e '.[0]' meta-array.json > meta.json
+  jq -e 'has("fqn") and has("url") and has("description") and has("timeout") and has("input_schema") and has("output_schema")' meta.json >/dev/null
+)
 ```
 
-For multiple Tools, keep the array for discovery and use the current `--batch` live endpoint flow or split reviewed objects according to the selected CLI version; do not guess a batch file format. Check that each object has `fqn`, `url`, `description`, `timeout`, `input_schema`, and `output_schema`, and that the output schema has a non-null top-level `oneOf`. Never hand-edit JSON Schema to paper over an implementation mismatch; change the Rust types and regenerate metadata.
+The block resolves `TOOL_MANIFEST` against the project working directory and validates the file before `cd` changes into `metadata_dir`, so both relative and absolute manifest inputs remain valid. The `metadata_dir` owns both generated files for the block's lifetime and is removed on normal completion or interruption; it does not affect the parent source-cleanup trap. For multiple Tools, keep the array for discovery and use the current `--batch` live endpoint flow or split reviewed objects according to the selected CLI version; do not guess a batch file format. Check that each object has `fqn`, `url`, `description`, `timeout`, `input_schema`, and `output_schema`, and that the output schema has a non-null top-level `oneOf`. Never hand-edit JSON Schema to paper over an implementation mismatch; change the Rust types and regenerate metadata.
 
-Run the local server on an unprivileged loopback address and validate the endpoint:
+Assume the selected Tool's `path()` returns `/weather`. Start the server in the foreground from the project terminal, then run validation from a second terminal so the server remains available:
 
 ```bash
-BIND_ADDR=127.0.0.1:8080 cargo run
-nexus tool validate offchain --url http://127.0.0.1:8080
+BIND_ADDR=127.0.0.1:8080 cargo run --manifest-path "$TOOL_MANIFEST"
+# second terminal, while the foreground server is running
+nexus tool validate offchain --url http://127.0.0.1:8080/weather
 ```
 
-Current validation requests `/health` and requires `200 OK`, fetches `/meta`, parses the FQN/URL/description/timeout/schemas, and rejects metadata without top-level `oneOf`. Independently review the final URL syntax and non-empty description before registration because live endpoint validation and registration metadata checks are separate paths. A custom Tool `path()` is part of the URL; validate the base path that serves its `health` and `meta` routes. A successful local validation proves health and metadata compatibility; it does not exercise `POST /invoke` or prove canonical output encoding. Invoke and decode representative success/error outputs in the local tests described in [scaffolding](scaffolding.md).
+Current validation requests `/health` and requires `200 OK`, fetches `/meta`, parses the FQN/URL/description/timeout/schemas, and rejects metadata without top-level `oneOf`. Independently review the final URL syntax and non-empty description before registration because live endpoint validation and registration metadata checks are separate paths. The custom Tool `path()` is part of the URL, so validation must target `/weather` here and the Tool's actual suffix in other projects; the `/health` and `/meta` routes are served below that base path. A successful local validation proves health and metadata compatibility; it does not exercise `POST /invoke` or prove canonical output encoding. Invoke and decode representative success/error outputs in the local tests described in [scaffolding](scaffolding.md).
 
 ## 3. Configure signed HTTP v3 deliberately
 

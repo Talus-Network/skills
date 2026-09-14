@@ -1,32 +1,36 @@
 # Payment ledger
 
-## Trace worksheet
+Use this worksheet to keep payment custody and accounting surfaces separate. It supplements the entrypoint's route and read-first procedure; it never authorizes a transaction.
 
-Record one row for each observed object or event:
+## Evidence sources
 
-| Field | Required value |
-| --- | --- |
-| Identity | object ID, type, version, digest, owner |
-| Workflow link | Task ID, Occurrence ID, Execution ID, vertex, Invocation ID |
-| Payment link | payment ID, source, policy, budget split, Tool/priority totals |
-| Outcome | status, charge, refund, settlement evidence, transaction provenance |
-| Evidence class | observed, exact-event derived, unavailable, or conflicting |
+For version-sensitive CLI fields or Move payment objects, use the installed bundle's `scripts/prepare_sources.py` through [the source-preparation contract](source-preparation.md). For deployed package, module, object, or chain observations, use the bundle-root helper with the explicit official Sui Testnet GraphQL endpoint:
 
-Never infer an Invocation from an FQN, Tool price, cashier ID, or payment ID alone. Correlate the exact Execution, runtime vertex, Tool, policy, amount, source, beneficiary, and refund destination.
+```bash
+python3 "$SKILLS_BUNDLE_ROOT/scripts/testnet_evidence.py" \
+  --graphql-url https://graphql.testnet.sui.io/graphql \
+  --package-id 0x<package-id> --module <module-name>
+```
 
-## Distinct custody surfaces
+Retain `network`, `endpoint`, allowlisted `calls`, response digests, and report digest. A successful read proves only that returned public state existed at collection time; it does not prove execution, registration, payment settlement, or authorization.
 
-- SUI gas is immediate transaction funding and is independent from payment reserves and Tool earnings.
-- `TaskPaymentReserve` funds future occurrences; `ExecutionPayment` funds one dispatched Execution.
-- Agent vault balance is Agent-funded custody and must match the exact Agent/source identity.
-- Tool registration collateral is distinct from Tool invocation revenue.
-- ToolCashier inbox/collection evidence applies only to finalized Invocation or deposit objects accepted by the selected policy.
-- Priority fees in an ExecutionPayment are separate from any priority-vault balance or share.
+## Ledger rows
 
-## Testnet evidence
+Record exact object IDs, owners, types, versions, transaction/checkpoint provenance, amounts, and states. Use one row for each relationship and classify its evidence as `observed`, `derived`, `unavailable`, or `conflicting`.
 
-Use `../scripts/testnet_evidence.py` with an explicit official testnet endpoint for package, module, object, and chain observations. Retain its `network`, `endpoint`, `calls`, response digests, and report digest. A successful read proves only that the returned public state existed at collection time; it does not prove execution, registration, payment settlement, or authorization.
+| Surface | Question | Do not conflate it with |
+| --- | --- | --- |
+| Signer SUI and owned gas coins | What funded transaction gas? | Tool collateral, Task reserves, Agent vaults, or Tool earnings |
+| `TaskPaymentReserve` | What funds future occurrences? | A dispatched Execution's budget or a settled Invocation |
+| `ExecutionPayment` | What budget, locks, charges, priority fee, refund, and final state belong to this Execution? | Address balance, native gas, or another Execution |
+| Tool/Invocation/receipt | What Tool price, policy amount, result, settlement, or deposit is recorded? | ToolCashier collection without finalized Invocation/deposit evidence |
+| Agent payment vault | What Agent-funded custody and recipient are recorded? | Task/Execution payment custody |
+| Priority fee/vault path | What priority accounting is recorded? | Tool revenue or execution funding |
+
+## Collectability boundary
+
+Treat a Tool amount as `unavailable` until the exact Invocation, policy/beneficiary, deposit, and settlement records establish that it is collectible. Missing collection authority or an unperformed collection action does not establish a zero entitlement. Compute a collectible amount only after verifying field semantics, payment scope, and non-overlap; do not subtract or add balances whose relationship is only inferred.
 
 ## Safe conclusion
 
-If an ID, owner, version, type origin, network identity, or relationship is absent or inconsistent, mark the row unavailable/conflicting and stop at the earliest missing read. Do not repair a payment trace with a guessed command or by submitting a transaction.
+An exact Task → Occurrence → Execution → `ExecutionPayment` relationship and matching Tool/Invocation/payment locks are required before declaring a trace complete. If an ID, owner, version, type origin, network identity, or relationship is absent or inconsistent, mark the row unavailable/conflicting and return the earliest missing read. Do not repair a payment trace by guessing a command or submitting a transaction.

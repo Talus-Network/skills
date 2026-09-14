@@ -4,7 +4,7 @@
   "evals": [
     {
       "id": "onchain-tool-contract",
-      "prompt": "Build a Sui Move Tool with a public execute ABI, state witness, authorization/input commitment check, typed output on every branch, and finalization. Prepare the public Move package closure, run local tests, and validate the generated artifacts.",
+      "prompt": "Use the $nexus-onchain-tool-development skill. Build a Sui Move Tool with a public execute ABI, state witness, authorization/input commitment check, typed output on every branch, and finalization. Prepare the public Move package closure, run local tests, and validate the generated artifacts.",
       "sources": [
         "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages",
         "https://www.moveregistry.com/package/@talus/nexus-primitives",
@@ -18,14 +18,16 @@
         "Authorization, witness, recipient, commitment, output, and finalization order are tested.",
         "Offline validator output is not presented as native execution or registration proof.",
         "When tests call published Nexus functions, the explicit NEXUS_BETA_CLI VM gate is run and rerun unfiltered after any focused diagnosis; its directory is not exported on PATH."
-      ]
+      ],
+      "trigger": "explicit",
+      "should_trigger": true
     },
     {
       "id": "onchain-tool-test-repair",
       "prompt": "In a fresh isolated consumer workspace, build an on-chain Move Tool with the public contract and run its local tests. A seeded local failure occurs during the published-bytecode test. Diagnose the failure from the first concrete command output, make the smallest repair, rerun the owning gate, and report the boundary before any deployment action.",
       "sources": [
-        "bundled:references/workflow.md",
-        "bundled:references/source-map.md",
+        "bundled:nexus-onchain-tool-development/references/workflow.md",
+        "bundled:nexus-onchain-tool-development/references/source-map.md",
         "https://github.com/Talus-Network/nexus-sdk/blob/main/cli/src/tap/tap_test.rs",
         "https://github.com/Talus-Network/nexus-move-packages/blob/main/docs/tap_development.md",
         "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages"
@@ -35,7 +37,9 @@
         "The agent runs package-owned tests and the explicit NEXUS_BETA_CLI VM gate against published Nexus bytecode.",
         "The agent does not infer the defective field from the prompt; it reports the earliest concrete compiler, linker, ABI/layout, witness/result, authorization, commitment, output, or finalization message.",
         "The agent changes only the implicated Tool source or test arrangement, reruns the same gate unfiltered, and does not publish, register, bind, schedule, sign, or move assets."
-      ]
+      ],
+      "trigger": "contextual",
+      "should_trigger": true
     },
     {
       "id": "onchain-testnet-read",
@@ -50,29 +54,33 @@
         "The helper requires a package identifier for module reads and rejects malformed identifiers.",
         "No wallet, environment switch, signing, publication, registration, or transaction is attempted.",
         "Endpoint errors and unsupported GraphQL queries fail closed."
-      ]
+      ],
+      "trigger": "implicit",
+      "should_trigger": true
     },
     {
       "id": "onchain-grill-ambiguous",
-      "prompt": "Build an on-chain Move Tool that changes some state and emits a result. Start from this incomplete request.",
+      "prompt": "Build a Sui Move Tool that reads state and returns a result. The consumer package, authorization identity, and deployment/write boundary are missing. Identify only the material decisions that change the implementation.",
       "sources": [
-        "bundled:references/workflow.md",
+        "bundled:nexus-onchain-tool-development/references/workflow.md",
         "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages",
         "https://www.moveregistry.com/package/@talus/nexus-interface"
       ],
-      "expected_output": "Exactly one recommended material question and a no-action stop until the ABI, state/authorization requirements, scope, mutation boundary, acceptance evidence, and compact design are shared.",
+      "expected_output": "A concise clarification request for missing Move contract or authorization decisions, with source-answerable facts resolved read-only and dependent edits paused.",
       "expectations": [
-        "The agent asks one unresolved material question at a time and includes a recommended answer with its reason.",
-        "The agent does not scaffold Move files, acquire sources, build, test, generate artifacts, write, publish, or register before the contract and design are explicit.",
-        "Facts answerable from the approved public Move package or Sui sources are resolved read-only rather than turned into unnecessary user questions."
-      ]
+        "The agent asks only about unresolved material behavior, authority, or acceptance decisions and gives a reversible recommended assumption.",
+        "The agent does not scaffold Move files, acquire sources, build, test, generate artifacts, write, publish, or register before the dependent contract decision is resolved.",
+        "Facts answerable from approved public Move package or Sui sources are resolved read-only rather than turned into user questions."
+      ],
+      "trigger": "implicit",
+      "should_trigger": true
     },
     {
       "id": "onchain-grill-fully-specified",
       "prompt": "Build a Sui Move Tool named com.example.weather.lookup@1. Goal: expose a public execute ABI that reads a package-owned WeatherState and produces one TaggedOutput. Requirements: place the framework-owned prefix before application inputs and end with &mut TxContext; consume the supplied authorization against the exact recipient, state UID, and input commitment before changing state; finalize one output on every branch. Inputs: a WeatherState object, public authorization/result interfaces, and operator-supplied placeholder IDs. In scope: the consumer Move package, manifest, artifact summary, pure application tests, and structural validators. Non-goals: publication, registration, binding, scheduling, asset movement, or invented deployment IDs. Authorization: local files/build/test are authorized; only read-only official Testnet GraphQL observations are allowed; no wallet, environment switch, signing, or shared-network mutation is authorized. Acceptance: ABI/order, witness/recipient/commitment, output/finalization, malformed-input, pure tests, manifest closure, and artifact validation. Design: inspect the public interface contract, write the smallest package, then run isolated local tests and validators. Use approved public sources and do not ask a redundant question.",
       "sources": [
-        "bundled:references/workflow.md",
-        "bundled:references/source-map.md",
+        "bundled:nexus-onchain-tool-development/references/workflow.md",
+        "bundled:nexus-onchain-tool-development/references/source-map.md",
         "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages",
         "https://www.moveregistry.com/package/@talus/nexus-primitives",
         "https://www.moveregistry.com/package/@talus/nexus-interface",
@@ -80,17 +88,19 @@
       ],
       "expected_output": "A recorded complete contract and compact design followed by the isolated Move implementation/test/validation workflow, with no redundant question and no deployment mutation.",
       "expectations": [
-        "The complete goal, requirements, inputs/boundary, scope, non-goals, authorization, acceptance evidence, and design are recorded before development actions.",
-        "No material clarification question is asked because the request already specifies the contract; public-source facts are resolved from approved sources.",
-        "The resulting package/tests preserve authorization, witness, commitment, output, finalization, artifact, and read-only Testnet boundaries."
-      ]
+        "The supplied instructions and existing context are assembled into a compact contract before development actions.",
+        "No clarification question is asked because no material behavior, authority, or acceptance decision remains unresolved; approved public-source facts are checked as needed.",
+        "The resulting package preserves authorization, witness identity, input commitment, tagged output, finalization, artifact, and read-only Testnet boundaries."
+      ],
+      "trigger": "implicit",
+      "should_trigger": true
     },
     {
       "id": "onchain-scaffold-admission-and-witness",
       "prompt": "Adapt an on-chain Tool scaffold that transfers assets from shared state for an authorized TAP. Its execute prefix includes ProvenValue<AgentVertexAuthorization> but the body only drops that proof; registration notes use the shared state ID as tool-witness-id although the witness lives in a Bag. Implement and test the local admission checks and prepare registration inputs. Local package and published-bytecode tests are authorized; publication, registration, signing, and asset movement on the network are not.",
       "sources": [
-        "bundled:references/scaffolding.md",
-        "bundled:references/workflow.md",
+        "bundled:nexus-onchain-tool-development/references/scaffolding.md",
+        "bundled:nexus-onchain-tool-development/references/workflow.md",
         "https://docs.talus.network/guides/tool-development/build-onchain-tool"
       ],
       "expected_output": "A verified pre-mutation authorization boundary, matching result schema, exercised rejection cases, and a registration report that requires proven nested-witness extraction.",
@@ -99,7 +109,56 @@
         "The witness ID is distinguished from state and dynamic-field wrapper IDs, and registration remains pending if a reviewed decoder fixture is absent.",
         "Tests calling Nexus functions use the explicit published-bytecode harness instead of treating pure logic tests as full execute-path proof.",
         "No local sibling implementation dependency, manual registration-mode flag, or unauthorized transaction is introduced."
-      ]
+      ],
+      "trigger": "implicit",
+      "should_trigger": true
+    },
+    {
+      "id": "onchain-negative-offchain-provider",
+      "expected_skill": "nexus-offchain-tool-development",
+      "trigger": "implicit",
+      "prompt": "Create a Rust HTTP Tool that calls an external provider with bounded injectable I/O, externally tagged output variants, signed HTTP replay checks, and key-free metadata.",
+      "sources": [
+        "bundled:nexus-offchain-tool-development/references/scaffolding.md",
+        "https://docs.talus.network/guides/tool-development/build-offchain-tool"
+      ],
+      "expected_output": "The off-chain Tool skill is selected; Sui Move Tool scaffolding is not triggered.",
+      "expectations": [
+        "The request routes to off-chain Tool development rather than Move package authoring.",
+        "No execute ABI, witness, Move package, or on-chain registration flow is invented."
+      ],
+      "should_trigger": false
+    },
+    {
+      "id": "onchain-negative-payment-read",
+      "trigger": "negative",
+      "prompt": "Reconcile a Task reserve, ExecutionPayment budget, Tool charge, priority fee, refund, and Agent vault from exact read-only records. No Move package or Tool implementation is requested.",
+      "sources": [
+        "bundled:nexus-cli-payment-tracking/references/payment-ledger.md",
+        "https://docs.talus.network/concepts/06-payment-vaults-reserves-and-settlement"
+      ],
+      "expected_output": "The CLI payment-tracking skill is selected; on-chain Tool authoring is not triggered.",
+      "expectations": [
+        "The request routes to payment reconciliation rather than Move Tool authoring.",
+        "No execute ABI, witness, output, or registration plan is invented."
+      ],
+      "should_trigger": false,
+      "expected_skill": "nexus-cli-payment-tracking"
+    },
+    {
+      "id": "onchain-routine-witness-decoder-review",
+      "prompt": "Review an existing on-chain Tool registration test. The Move package and Tool FQN are supplied; repair the reviewed package-specific nested Bag witness decoder fixture and rerun the owning local test without publishing or registering.",
+      "sources": [
+        "bundled:nexus-onchain-tool-development/references/scaffolding.md",
+        "bundled:nexus-onchain-tool-development/references/workflow.md"
+      ],
+      "expected_output": "A focused fixture/test repair that proves the actual nested witness UID and preserves the local-only deployment boundary.",
+      "expectations": [
+        "The routine review proceeds from supplied context and reversible assumptions without a ceremonial contract question.",
+        "Registration remains blocked unless a reviewed package-specific nested Bag witness decoder fixture proves the actual nested witness UID; an inner/state or wrapper ID alone is insufficient."
+      ],
+      "trigger": "implicit",
+      "should_trigger": true
     }
   ]
 }

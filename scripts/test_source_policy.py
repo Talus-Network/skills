@@ -125,6 +125,9 @@ class PublicSourcePolicyTests(unittest.TestCase):
                 "/guides/nexus-api/tutorial/03-stream-events",
                 "/guides/nexus-api/tutorial/04-assemble-the-dapp",
                 "/guides/nexus-api/tutorial/05-port-to-react",
+                "/guides/agent-usage/execute-and-settle-agent",
+                "/guides/tap-development/build-tap-move-package",
+                "/guides/tokenomics/fund-agent-and-user-executions",
                 "/guides/tool-development/build-offchain-tool",
                 "/guides/tool-development/build-onchain-tool",
                 "/guides/tool-development/tool-communication",
@@ -414,6 +417,32 @@ class PublicSourcePolicyTests(unittest.TestCase):
             errors = []
             validator.validate_portability(root, errors)
             self.assertTrue(any("public Skills install selector" in error for error in errors))
+
+    def test_eval_validator_rejects_owning_activation_for_expected_sibling(self) -> None:
+        validator = _load("source_policy_eval_routing_validator", ROOT / "scripts/validate_skills.py")
+        entry = {
+            "id": "routing-case",
+            "prompt": "route this request",
+            "sources": ["https://github.com/Talus-Network/nexus-sdk/tree/main/cli/src/tool"],
+            "expected_output": "route to sibling",
+            "expectations": ["observe the route", "keep boundaries"],
+            "trigger": "implicit",
+            "should_trigger": True,
+            "expected_skill": "nexus-onchain-tool-development",
+        }
+        document = {
+            "skill_name": "nexus-offchain-tool-development",
+            "source_constraint": "public source only",
+            "evals": [entry, {**entry, "id": "second-case", "expected_skill": None}],
+        }
+        with tempfile.TemporaryDirectory(
+            prefix="source-policy-eval-routing-", dir=ROOT
+        ) as directory:
+            path = Path(directory) / "evals.json"
+            path.write_text(json.dumps(document), encoding="utf-8")
+            errors: list[str] = []
+            validator.validate_eval_file(document["skill_name"], path, errors)
+        self.assertTrue(any("expected_skill requires should_trigger=false" in error for error in errors))
 
     def test_source_selector_policy_allows_only_public_repositories(self) -> None:
         validator = _load("source_policy_selector_validator", ROOT / "scripts/validate_skills.py")

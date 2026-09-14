@@ -4,7 +4,7 @@
   "evals": [
     {
       "id": "payment-read-trace",
-      "prompt": "Trace a user-funded Task whose Occurrence has an ExecutionPayment. Identify the exact Task, Occurrence, Execution, payment source, budget, locks, charges, and final state using read-only CLI/object reads and the explicit testnet evidence helper.",
+      "prompt": "Use the $nexus-cli-payment-tracking skill. Trace a user-funded Task whose Occurrence has an ExecutionPayment. Identify the exact Task, Occurrence, Execution, payment source, budget, locks, charges, and final state using read-only CLI/object reads and the explicit testnet evidence helper.",
       "sources": [
         "https://github.com/Talus-Network/nexus-sdk/tree/main/cli/src/task",
         "https://github.com/Talus-Network/nexus-move-packages/tree/main/packages",
@@ -14,8 +14,11 @@
       "expectations": [
         "The report keeps Task reserve, ExecutionPayment, Tool charge, priority fee, and SUI gas separate.",
         "Every observed relationship is backed by a read response, event/effect, checkpoint, or response digest.",
-        "No refill, settlement, collection, retry, or other mutation is run."
-      ]
+        "No refill, settlement, collection, retry, or other mutation is run.",
+        "An unproven collectible amount remains unavailable rather than zero; missing collection authority or action is not zero entitlement, and arithmetic requires verified field semantics without overlap."
+      ],
+      "trigger": "explicit",
+      "should_trigger": true
     },
     {
       "id": "payment-testnet-boundary",
@@ -30,7 +33,41 @@
         "The helper requires the endpoint explicitly and does not inspect wallet or environment configuration.",
         "Only package/module/object/network-identity reads are used.",
         "A read-only response is not described as execution or settlement proof."
-      ]
+      ],
+      "trigger": "contextual",
+      "should_trigger": true
+    },
+    {
+      "id": "payment-shortfall-ledger",
+      "trigger": "implicit",
+      "prompt": "A recurring Task shows a reserve decrease and a Tool charge, but the owner cannot reconcile the remaining balance. Reconstruct the read-only payment ledger and name the earliest missing relationship without collecting or settling anything.",
+      "sources": [
+        "bundled:nexus-cli-payment-tracking/references/payment-ledger.md",
+        "bundled:scripts/testnet_evidence.py"
+      ],
+      "expected_output": "A custody-separated ledger that identifies the exact missing Task, Occurrence, Execution, or payment relationship and a safe next read.",
+      "expectations": [
+        "Signer gas, Task reserve, ExecutionPayment, Tool charge, priority fee, Agent vault, and refund remain separate rows.",
+        "The report marks missing or conflicting evidence unresolved instead of inferring it from a payment ID.",
+        "No payment collection, settlement, retry, or refill is attempted."
+      ],
+      "should_trigger": true
+    },
+    {
+      "id": "payment-negative-offchain-build",
+      "trigger": "negative",
+      "prompt": "Create a standalone Rust HTTP Tool that calls a weather provider, emits canonical output, and passes local metadata tests. No payment records or on-chain reconciliation are needed.",
+      "sources": [
+        "bundled:nexus-offchain-tool-development/references/scaffolding.md",
+        "https://docs.talus.network/guides/tool-development/build-offchain-tool"
+      ],
+      "expected_output": "The payment-tracking skill is not selected for an off-chain Tool implementation request.",
+      "expectations": [
+        "The request routes to off-chain Tool development rather than payment reconciliation.",
+        "No Task, reserve, ExecutionPayment, or ToolCashier ledger is invented."
+      ],
+      "should_trigger": false,
+      "expected_skill": "nexus-offchain-tool-development"
     }
   ]
 }

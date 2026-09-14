@@ -1,0 +1,21 @@
+{
+  "skill_name": "nexus-offchain-tool-development",
+  "catalog": "response",
+  "source_constraint": "Synthetic supplied-input response case; no tools or live reads are available.",
+  "evals": [
+    {
+      "id": "offchain-supplied-code-review-response",
+      "prompt": "Review this self-contained synthetic Rust Tool sketch in text. Output is `#[derive(Serialize)] enum Output { Success { temperature_c: i64 }, ProviderError }`. The entrypoint calls `load_provider_key()?` before checking for `--meta`; metadata uses this enum's schema. `path()` returns `weather/forecast`. The synthetic service root is `http://127.0.0.1:8080`; derive the full invocation and validation URL as `http://127.0.0.1:8080/weather/forecast` and do not invent a provider URL. The current local test checks only generated metadata; the captured local invocation log for ProviderError says `output_serialization_error`. No source \u0063heckout, filesystem, runtime, or provider connection is available here. Give the minimal repair and meaningful regression checks based on the sketch. Preserve FQN com.example.weather.forecast@1, the path, and the local-only scope. Do not claim compiled code or passing tests, and do not ask for unrelated setup decisions.",
+      "sources": ["bundled:nexus-offchain-tool-development/references/scaffolding.md"],
+      "expectations": [
+        "Changes the zero-port ProviderError to an externally tagged named-field variant such as ProviderError {} and covers both reachable variants with actual invocation/canonical BCS decoding checks, not metadata-only or JSON serialization proof.",
+        "Moves the metadata dispatch before provider configuration and I/O while retaining startup configuration validation for service mode; metadata tests require no key or network.",
+        "Preserves the custom weather/forecast path and distinguishes its full invocation/validation URL from the service root.",
+        "Reviews the supplied defect without a ceremonial setup/contract question, keeps checks proposed rather than falsely executed, and does not require real credentials or registration."
+      ],
+      "expected_output": "A focused text repair and regression design for canonical output and key-free metadata with honest execution status.",
+      "trigger": "explicit",
+      "should_trigger": true
+    }
+  ]
+}

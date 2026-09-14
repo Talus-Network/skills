@@ -16,16 +16,22 @@ Retain `network`, `endpoint`, allowlisted `calls`, response digests, and report 
 
 ## Ledger rows
 
-Record exact object IDs, owners, types, versions, transaction/checkpoint provenance, amounts, and states. Use one row for each relationship and classify its evidence as `observed`, `derived`, `unavailable`, or `conflicting`.
+Record exact object IDs, owners, types, versions, transaction/checkpoint provenance, amounts, and states. Use one row for each applicable surface below; split meters exposed by one object into separate rows. Classify every row as `observed`, `derived`, `unavailable`, or `conflicting`.
 
 | Surface | Question | Do not conflate it with |
 | --- | --- | --- |
-| Signer SUI and owned gas coins | What funded transaction gas? | Tool collateral, Task reserves, Agent vaults, or Tool earnings |
-| `TaskPaymentReserve` | What funds future occurrences? | A dispatched Execution's budget or a settled Invocation |
-| `ExecutionPayment` | What budget, locks, charges, priority fee, refund, and final state belong to this Execution? | Address balance, native gas, or another Execution |
-| Tool/Invocation/receipt | What Tool price, policy amount, result, settlement, or deposit is recorded? | ToolCashier collection without finalized Invocation/deposit evidence |
-| Agent payment vault | What Agent-funded custody and recipient are recorded? | Task/Execution payment custody |
-| Priority fee/vault path | What priority accounting is recorded? | Tool revenue or execution funding |
+| Signer SUI and owned gas coins | What funded transaction gas, and which owner/effect records it? | Tool collateral, Task reserves, Agent vaults, Tool earnings, or an ExecutionPayment budget |
+| `TaskPaymentReserve` | What reserve funds future occurrences, with before/after amounts and owner? | Dispatched Execution budget, Invocation charge, or refund |
+| `ExecutionPayment` budget and lock | What total budget and lock belong to this Execution? | Task reserve balance, native transaction gas, or another Execution |
+| `ExecutionPayment` gas subtotal | What gas budget, lock, and consumption are recorded? | Signer gas coins or Tool charge |
+| `ExecutionPayment` Tool subtotal | What Tool budget or lock is recorded? | Tool price/charge actually recorded by the Invocation |
+| `ExecutionPayment` priority subtotal | What priority budget or lock is recorded? | Priority fee transfer/vault or Tool revenue |
+| Tool/Invocation charge and receipt | What Tool price, policy amount, charge, result, deposit, and settlement are recorded? | ExecutionPayment budget, native gas, or ToolCashier collection without finalized evidence |
+| Priority fee transfer/vault | What priority amount, recipient, and effect are recorded? | ExecutionPayment priority budget, Tool revenue, or signer gas |
+| Agent payment vault | What Agent-funded custody, owner, and recipient are recorded? | Task reserve or ExecutionPayment custody |
+| Refund amount and final state | What refund amount, source, status, and reserve closure are recorded? | Unspent budget inferred from subtraction or a balance snapshot |
+| Refund recipient and beneficiary identity | Which exact object/address receives the refund or Tool entitlement? | Payment source, Tool price, or an inferred owner |
+| Collection authority and deposit | Which exact capability, policy, beneficiary, and deposit establish collectability? | An unperformed collection action or a zero balance |
 
 ## Collectability boundary
 

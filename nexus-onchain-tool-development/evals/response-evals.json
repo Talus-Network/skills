@@ -1,0 +1,21 @@
+{
+  "skill_name": "nexus-onchain-tool-development",
+  "catalog": "response",
+  "source_constraint": "Synthetic supplied-input response case; no tools or live reads are available.",
+  "evals": [
+    {
+      "id": "onchain-supplied-admission-response",
+      "prompt": "Review this conceptual on-chain Tool flow in text; it is intentionally pseudocode, not a compilable SDK sample: execute(result, proof: ProvenValue<AgentVertexAuthorization>, state: &mut State, input, ctx) { drop(proof); transfer_from(state, input.recipient); result.emit(Success {}); result.finalize_and_share(); }. The worksheet's intended recipient and state UID are available; the result carries the input commitment. State id is 0x31; a dynamic-field wrapper id is 0x32; the witness is nested in a Bag and no reviewed decoder fixture exists. Registration notes currently propose tool-witness-id=0x31. Explain the minimal conceptual correction, negative tests, correct local gate when tests call published Nexus functions, and readiness boundary. No tools, source \u0063heckout or execution are available. Do not invent exact public function signatures or a witness ID.",
+      "sources": ["bundled:nexus-onchain-tool-development/references/workflow.md"],
+      "expectations": [
+        "Requires consuming and checking verified authorization against worksheet recipient, state UID and result input commitment before any state/asset mutation; merely dropping the proof is insufficient.",
+        "Separates witness, state and wrapper identities; refuses to use 0x31 or 0x32 as a guessed witness and leaves registration pending a reviewed nested-witness decoder fixture.",
+        "Proposes negative recipient/state/commitment or authorization tests and checks output/finalization ordering, with no claim that pseudocode compiled or tests ran.",
+        "Identifies the explicit NEXUS_BETA_CLI published-bytecode gate for tests that call Nexus functions, keeps the beta directory off PATH, and requires rerunning the owning gate unfiltered after focused diagnosis without any live publication/registration."
+      ],
+      "expected_output": "A conceptual pre-mutation authorization repair, witness admission gap, and separated local verification plan.",
+      "trigger": "explicit",
+      "should_trigger": true
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "skill_name": "nexus-cli-payment-tracking",
+  "catalog": "response",
+  "source_constraint": "Synthetic supplied-input response case; no tools or live reads are available.",
+  "evals": [
+    {
+      "id": "payment-partial-records-response",
+      "prompt": "Review this synthetic payment worksheet in your response; no tools or live reads are available. Supplied records: Task 0x11 v3 links Occurrence 0x12 and reserve 0x13; Occurrence 0x12 links Execution 0x14; Execution 0x14 links ExecutionPayment 0x15. At synthetic checkpoint 90, reserve 0x13 fell from 100 to 60 units. Payment 0x15 records gas budget 5, Tool budget 20, priority budget 3, and a Tool charge 7 linked to Invocation 0x16. No source transfer effect, payment final state, gas spend, priority transfer, Agent vault read, refund effect, beneficiary identity, or collection capability was supplied. Versions, owners, types, and digests of all other objects are absent. Produce the reconciliation possible from these records and the next missing evidence. The Tool operator has never collected; determine whether that establishes zero entitlement. Do not invent CLI flags, live observations, or arithmetic across unproven relationships.",
+      "sources": ["bundled:nexus-cli-payment-tracking/references/payment-ledger.md"],
+      "expectations": [
+        "Keeps signer gas, Task reserve, ExecutionPayment budgets, Tool charge, priority fee/vault, Agent vault, refund, and recipient identity individually visible rather than grouping missing categories into one row; separates payment gas/Tool/priority subtotals.",
+        "Preserves the supplied Task/Occurrence/Execution/payment/Invocation links and marks missing owners/types/versions/digests and records unavailable or user-supplied; does not label the synthetic worksheet a live read.",
+        "Does not equate the reserve decrease of 40 with the payment budget of 28 or infer a refund of 12/21; identifies the missing reserve-to-payment transfer evidence and final-state/refund evidence.",
+        "Collection not performed or capability absent does not establish zero entitlement; collectibility stays unavailable pending exact Invocation, beneficiary/policy, deposit and settlement evidence, without authorizing a collection."
+      ],
+      "expected_output": "A custody-separated partial ledger with honest provenance, no invented arithmetic or zero entitlement, and specific next reads.",
+      "trigger": "explicit",
+      "should_trigger": true
+    }
+  ]
+}

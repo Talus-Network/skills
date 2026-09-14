@@ -1,6 +1,6 @@
 ---
 name: nexus-tap-development
-description: Build and verify Talus Agent Packages and their applications: Move packages, DAG/skill artifacts, structural validators, published-bytecode tests, or existing-TAP REST/SSE dashboards through a server-side relay. Use for TAP workflows; route standalone Tools, payment reconciliation, or Execution diagnosis elsewhere.
+description: "Build and verify Talus Agent Packages and their applications: Move packages, DAG/skill artifacts, structural validators, published-bytecode tests, or existing-TAP REST/SSE dashboards through a server-side relay. Use for TAP workflows; route standalone Tools, payment reconciliation, or Execution diagnosis elsewhere."
 ---
 
 # Nexus TAP development
@@ -11,7 +11,7 @@ Use this skill for a DAG-backed TAP package, its Move package and skill artifact
 
 Before setup, source preparation, package/DAG/fixture build, test, artifact generation, file writes, or shared-network actions, assemble a compact task contract from the supplied instructions, existing project and conversation context, approved public source facts, and reasonable reversible assumptions. Capture the goal and outcome, observable requirements, application/TAP/package/DAG/Tool inputs and integration boundary, in-scope deliverable/file scope, non-goals, authorization and network/write boundary, acceptance evidence, and a compact implementation design.
 
-Route the request before setup and read only the task-relevant references. Ask one concise question only when an unresolved material behavior, authority, or acceptance decision changes the work. Pause dependent work while that answer is pending, and continue useful authorized independent reads or checks. Resolve facts answerable from approved public Docs, SDK, Move Packages, Sui, or read-only Testnet sources without turning them into user questions. When the contract is sufficient, proceed; there is no default grilling ritual or required phrase.
+Route the request before setup and read only the task-relevant references. Ask one concise question only when an unresolved material behavior, authority, or acceptance decision changes the work. Pause dependent work while that answer is pending, but continue useful authorized independent reads and checks. Resolve facts answerable from approved public Docs, SDK, Move Packages, Sui, or read-only Testnet sources without turning them into user questions. When the contract is sufficient, proceed with authorized reversible setup, source reads, builds, tests, and file edits; no default grilling ritual is required.
 
 ## Route before setup
 

@@ -29,7 +29,7 @@ python3 "$SKILLS_BUNDLE_ROOT/scripts/testnet_evidence.py" \
   --package-id 0x<package-id> --module <module-name>
 ```
 
-Treat missing, stale, malformed, or conflicting evidence as a concrete gap and record the exact query failure. Read-only public source or Testnet state never proves an actor's off-chain behavior.
+Treat missing, stale, malformed, or conflicting evidence as a concrete gap and record the exact query failure. Read-only public source or Testnet state proves only the returned public fields at collection time; it does not establish a Leader submission, native or off-chain Tool/provider execution, actor intent, finality, or payment settlement unless an exact execution/result/effect/receipt record states that fact.
 
 ## Diagnosis procedure
 

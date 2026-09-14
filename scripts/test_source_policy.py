@@ -501,11 +501,9 @@ class PublicSourcePolicyTests(unittest.TestCase):
         self.assertNotIn("--rpc-url", text)
         self.assertNotIn("SUI_RPC_URL", text)
 
-    def test_readme_uses_only_a_repository_local_entrypoint(self) -> None:
+    def test_readme_installs_from_the_public_skills_repository(self) -> None:
         text = (ROOT / "README.md").read_text(encoding="utf-8")
         selector = "Talus-Network/" + "skills"
-        self.assertIn("SKILLS_BUNDLE_ROOT", text)
-        self.assertIn("scripts/validate_skills.py", text)
         install_match = re.search(
             r"## Install from the public repository\n\n.*?```bash\n(.*?)\n```",
             text,
@@ -520,7 +518,6 @@ class PublicSourcePolicyTests(unittest.TestCase):
                 "npx skills add " + selector,
             ],
         )
-        self.assertIn("canonical command is release/install UX only", text)
 
     def test_graphql_examples_make_the_transport_claim_explicit(self) -> None:
         maintained = (

@@ -1,0 +1,34 @@
+{
+  "skill_name": "nexus-tap-development",
+  "catalog": "response",
+  "source_constraint": "Synthetic supplied-input response cases; no tools or live reads are available.",
+  "evals": [
+    {
+      "id": "tap-supplied-replay-response",
+      "prompt": "Compute the expected consumer state from these synthetic fixtures in your response; do not run or write an app. All page items and event payloads otherwise satisfy their schemas. Page 1 returns items=[A], next_token=0. Request page_token=0 first returns 429 Retry-After: 2, then items=[B], next_token='tail'. Request page_token='tail' returns items=[C], next_token=null. For arbitrary page counts, keep requesting exactly each returned next_token and terminate only when next_token=null; do not impose a fixed page limit such as three pages. Initial saved SSE cursor is 8. Frames (transport ID, payload.id) in order: ('9',10), ('9',9), ('9',9), ('7',7), ('10',10 with payload missing), ('',11 valid). A reconnect request_id=req_demo then receives 403 ACCESS_DENIED. A generation-1 REST catch-up read for the saved cursor is still in flight; after the user explicitly corrects credentials and presses Retry, start generation 2 before the obsolete generation-1 read returns, then cancel the obsolete generation-1 request and ignore its late response while retaining the 403 diagnostics and cursor. Explain page requests/retries, emitted items, accepted events, final saved cursor, reconnect and recovery behavior, and required event-history versus SSE route/scopes. No real key, network call, Move package, or wallet action is authorized.",      "sources": ["bundled:nexus-tap-development/references/nexus-api-application.md"],
+      "expectations": [
+        "Passes the opaque numeric zero as page_token, retries only that failed page respecting Retry-After 2, emits A/B/C once, stops at null and resets the retry budget after success without an arbitrary page cap.",
+        "Accepts only event IDs 9 and 11; rejects mismatched, duplicate, backwards and malformed frames without advancing the cursor; final saved cursor is 11 with empty transport ID falling back to validated payload ID.",
+        "Reconnect forwards saved cursor 11 and refreshes REST; 403 stops automatic requests/reconnects until explicit credential recovery, retaining diagnostics/cursor and canceling stale generations.",
+        "Distinguishes execution-scoped /executions/{execution_object_id}/events with executions:read from /events/stream with events:read, keeping provider keys on the server relay and avoiding Move setup."
+      ],
+      "expected_output": "Exact fixture-derived pagination and replay state, explicit authorization recovery, and separate REST/SSE access scopes.",
+      "trigger": "explicit",
+      "should_trigger": true
+    },
+    {
+      "id": "tap-supplied-projection-response",
+      "prompt": "Review this synthetic Run Watcher recovery proposal in text: 'After a wallet-approved transaction with saved digest tx_demo, ExecutionFinished SSE arrives. GET /executions/0x41 returns 404, so delete the execution and resend the transaction using the API provider key. Both network examples have the same base URL, therefore they are the same network.' Only this review and local-mock design are requested. No credentials, source \u0063heckout, live request or transaction is available. Give a corrected state transition and bounded recovery plan, retaining transaction evidence. Explain what each evidence source and authorization permits.",
+      "sources": ["bundled:nexus-tap-development/references/nexus-api-application.md"],
+      "expectations": [
+        "Rejects inferred deletion/finality/settlement from an SSE frame or 404; keeps tx_demo and a syncing/recovery state with bounded REST catch-up rather than resubmitting.",
+        "Requires validating intended deployment/network rather than using a shared example URL as network identity, keeping deployment-specific identifiers and replay state associated.",
+        "Keeps API provider read access separate from wallet/SDK transaction authority; prior approval of one transaction does not authorize another write and provider keys never confer that authority.",
+        "Provides a usable text transition/mock design without requiring unrelated package setup or real credentials and does not claim tests or live observations."
+      ],
+      "expected_output": "A deployment-aware projection recovery design preserving transaction evidence and authority boundaries.",
+      "trigger": "explicit",
+      "should_trigger": true
+    }
+  ]
+}

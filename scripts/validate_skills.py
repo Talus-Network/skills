@@ -8,8 +8,13 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Callable, Iterable
+from typing import Any, Callable, Iterable
 from urllib.parse import quote, unquote, urlsplit
+
+try:
+    import yaml as _yaml
+except ImportError:  # pragma: no cover - public bundle remains standard-library runnable.
+    _yaml = None
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -181,25 +186,96 @@ CHECKOUT_PHRASES = (
 )
 
 
-def frontmatter(text: str, path: Path) -> dict[str, str]:
-    if not text.startswith("---\n"):
-        raise ValueError(f"{path}: missing YAML frontmatter")
-    try:
-        raw = text.split("---\n", 2)[1]
-    except IndexError as exc:
-        raise ValueError(f"{path}: unclosed YAML frontmatter") from exc
-    fields: dict[str, str] = {}
+def _fallback_frontmatter(raw: str, path: Path) -> dict[str, Any]:
+    """Parse the needed frontmatter subset when PyYAML is unavailable.
+
+    This intentionally handles mappings, quoted scalars, comments, and simple
+    indented continuations used by this bundle. It is not a full YAML parser
+    and is only a standard-library fallback for the validator's required
+    frontmatter shape.
+    """
+    fields: dict[str, Any] = {}
     active_key: str | None = None
-    for line in raw.splitlines():
-        if line.startswith((" ", "\t")) and active_key:
-            fields[active_key] = f"{fields[active_key]} {line.strip()}".strip()
+    for line_number, line in enumerate(raw.splitlines(), 1):
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if line.startswith((" ", "\t")):
+            if active_key is None:
+                raise ValueError(f"{path}: invalid YAML frontmatter indentation at line {line_number}")
+            fields[active_key] = f"{fields[active_key]} {stripped}".strip()
             continue
         if ":" not in line:
-            continue
+            raise ValueError(f"{path}: invalid YAML frontmatter at line {line_number}")
         key, value = line.split(":", 1)
-        active_key = key.strip()
-        fields[active_key] = value.strip().strip("'\"")
+        key = key.strip()
+        value = value.strip()
+        if not key:
+            raise ValueError(f"{path}: invalid YAML frontmatter key at line {line_number}")
+        if value and value[0] in "'\"":
+            quote = value[0]
+            index = 1
+            closing_index: int | None = None
+            while index < len(value):
+                if quote == '"' and value[index] == "\\":
+                    index += 2
+                    continue
+                if quote == "'" and value[index : index + 2] == "''":
+                    index += 2
+                    continue
+                if value[index] == quote:
+                    closing_index = index
+                    break
+                index += 1
+            if closing_index is None:
+                raise ValueError(f"{path}: unclosed quoted YAML value at line {line_number}")
+            trailing = value[closing_index + 1 :].strip()
+            if trailing and not trailing.startswith("#"):
+                raise ValueError(f"{path}: invalid YAML quoted value at line {line_number}")
+            value = value[1:closing_index]
+            if quote == "'":
+                value = value.replace("''", "'")
+        else:
+            comment_index = next(
+                (
+                    index
+                    for index, character in enumerate(value)
+                    if character == "#" and (index == 0 or value[index - 1].isspace())
+                ),
+                None,
+            )
+            if comment_index is not None:
+                value = value[:comment_index].rstrip()
+            if value and value[0] not in "[{" and re.search(r":(?:\s|$)", value):
+                raise ValueError(
+                    f"{path}: unquoted ':' in plain YAML value at line {line_number}; quote the value"
+                )
+        fields[key] = value
+        active_key = key
     return fields
+
+
+def frontmatter(text: str, path: Path) -> dict[str, Any]:
+    """Parse and validate a SKILL.md YAML frontmatter document."""
+    if not (text.startswith("---\n") or text.startswith("---\r\n")):
+        raise ValueError(f"{path}: missing YAML frontmatter")
+    match = re.match(r"\A---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|\Z)", text)
+    if match is None:
+        raise ValueError(f"{path}: unclosed YAML frontmatter")
+    raw = match.group(1)
+    if _yaml is not None:
+        try:
+            parsed = _yaml.safe_load(raw)
+        except _yaml.YAMLError as exc:
+            raise ValueError(f"{path}: invalid YAML frontmatter: {exc}") from exc
+        if parsed is None:
+            return {}
+        if not isinstance(parsed, dict):
+            raise ValueError(f"{path}: YAML frontmatter must be a mapping")
+        if any(not isinstance(key, str) for key in parsed):
+            raise ValueError(f"{path}: YAML frontmatter keys must be strings")
+        return dict(parsed)
+    return _fallback_frontmatter(raw, path)
 
 
 def validate_links(path: Path, text: str, errors: list[str]) -> None:
@@ -223,7 +299,13 @@ def _path_label(path: Path) -> str:
         return str(path)
 
 
-def validate_eval_file(skill: str, path: Path, errors: list[str]) -> None:
+def validate_eval_file(
+    skill: str,
+    path: Path,
+    errors: list[str],
+    *,
+    minimum_cases: int = 2,
+) -> None:
     try:
         document = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError) as exc:
@@ -237,8 +319,10 @@ def validate_eval_file(skill: str, path: Path, errors: list[str]) -> None:
     if not isinstance(document.get("source_constraint"), str) or not document["source_constraint"].strip():
         errors.append(f"{path.relative_to(ROOT)}: source_constraint must be a non-empty string")
     entries = document.get("evals")
-    if not isinstance(entries, list) or len(entries) < 2:
-        errors.append(f"{path.relative_to(ROOT)}: expected at least two distinct eval cases")
+    if not isinstance(entries, list) or len(entries) < minimum_cases:
+        errors.append(
+            f"{path.relative_to(ROOT)}: expected at least {minimum_cases} distinct eval case(s)"
+        )
         return
     seen: set[str | int] = set()
     for index, entry in enumerate(entries):
@@ -270,6 +354,8 @@ def validate_eval_file(skill: str, path: Path, errors: list[str]) -> None:
         sources = entry.get("sources")
         if not isinstance(sources, list) or not sources or not all(isinstance(item, str) and item for item in sources):
             errors.append(f"{where}: sources must be a non-empty string list")
+        if "assertions" in entry:
+            errors.append(f"{where}: canonical catalogs must use expectations, not assertions")
         expectations = entry.get("expectations")
         if not isinstance(expectations, list) or len(expectations) < 2 or not all(isinstance(item, str) and item for item in expectations):
             errors.append(f"{where}: expectations must contain at least two observable strings")
@@ -732,6 +818,7 @@ def main(argv: list[str] | None = None) -> int:
         skill_dir = ROOT / skill
         skill_file = skill_dir / "SKILL.md"
         eval_file = skill_dir / "evals" / "evals.json"
+        response_eval_file = skill_dir / "evals" / "response-evals.json"
         if not skill_file.is_file():
             errors.append(f"{skill}/SKILL.md: missing")
             continue
@@ -743,9 +830,10 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError as exc:
             errors.append(str(exc))
             metadata = {}
-        if metadata.get("name") != skill:
+        if not isinstance(metadata.get("name"), str) or metadata["name"] != skill:
             errors.append(f"{skill}/SKILL.md: frontmatter name must match the directory")
-        if not metadata.get("description"):
+        description = metadata.get("description")
+        if not isinstance(description, str) or not description.strip():
             errors.append(f"{skill}/SKILL.md: missing trigger description")
         if len(list(skill_dir.rglob("*.md"))) < 2:
             errors.append(f"{skill}: expected at least one focused reference")
@@ -756,6 +844,8 @@ def main(argv: list[str] | None = None) -> int:
             validate_eval_file(skill, eval_file, errors)
         else:
             errors.append(f"{skill}/evals/evals.json: missing")
+        if response_eval_file.is_file():
+            validate_eval_file(skill, response_eval_file, errors, minimum_cases=1)
         if "prepare_sources.py" not in text or "testnet_evidence.py" not in text:
             errors.append(f"{skill}/SKILL.md: public source and testnet evidence boundaries are required")
     validate_helper(errors)

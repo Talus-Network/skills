@@ -187,6 +187,14 @@ class TestnetEvidenceTests(unittest.TestCase):
         )
         self.assertEqual(evidence["network"], "testnet")
         self.assertEqual(evidence["endpoint"], "https://graphql.testnet.sui.io/graphql")
+        vision_object_route = "https://" + "vision.talus.network/object/"
+        self.assertEqual(
+            evidence["vision_links"],
+            {
+                "object": vision_object_route + FULL_SIX + "?network=testnet",
+                "package": vision_object_route + FULL_TWO + "?network=testnet",
+            },
+        )
         self.assertEqual(len(evidence["calls"]), 7)
         self.assertTrue(evidence["sha256"])
         self.assertEqual(len(self.requests), 7)

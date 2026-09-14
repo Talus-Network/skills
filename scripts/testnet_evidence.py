@@ -16,6 +16,8 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
 from urllib.request import Request, urlopen
 
+from vision_links import VisionLinkError, vision_url
+
 
 TESTNET_GRAPHQL_HOST = "graphql.testnet.sui.io"
 UNSUPPORTED_TESTNET_HOSTS = frozenset({"fullnode.testnet.sui.io", "rpc.testnet.sui.io"})
@@ -1318,12 +1320,22 @@ class SuiTestnetEvidenceClient:
                 expected_module=module,
                 expected_struct=struct,
             )
+        # Navigation only: links are derived from returned, validated addresses.
+        vision_links: dict[str, str] = {}
+        for label in ("object", "package"):
+            observation = observations.get(label)
+            if isinstance(observation, Mapping):
+                try:
+                    vision_links[label] = vision_url("object", observation.get("address"), network="testnet")
+                except VisionLinkError:
+                    continue
         evidence: dict[str, object] = {
             "schema_version": 1,
             "network": "testnet",
             "endpoint": self.graphql_url,
             "canonicalization": "request selectors are canonicalized for lookup; returned address-bearing IDs, FQNs, and Move repr values are validated as canonical before hashing",
             "observations": observations,
+            "vision_links": vision_links,
             "calls": list(self._calls),
             "collected_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         }

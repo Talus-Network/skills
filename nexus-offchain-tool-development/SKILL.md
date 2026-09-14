@@ -53,6 +53,10 @@ Read [the scaffolding reference](references/scaffolding.md) before reviewing an 
 
 Signed HTTP v3 authenticates the canonical schema-ordered input commitment and canonical response bytes with a deterministic invocation nonce; it does not replace HTTPS. Test missing/tampered/wrong signatures and replay locally with the current Toolkit contract. Registration is a shared-network mutation: verify exact FQN, schema, final endpoint/path, beneficiary, collateral, gas, signer/capability custody, authorization, and authoritative post-state before and after an explicitly authorized operation. A successful command, digest, or metadata object alone is not registration proof.
 
+## Talus Vision links
+
+After exact read-only evidence returns an identifier, you may add a navigation link with the bundle-root `scripts/vision_links.py` helper, for example `python3 "$SKILLS_BUNDLE_ROOT/scripts/vision_links.py" --network testnet --kind tool --id <domain.name@version>`. Keep the explicit `?network=` query it emits; without it Vision falls back to Mainnet or the viewer's last-used network. Link only full identifiers returned by the verifying read, on that read's network (Testnet for the bundled helper). Never link placeholders, shortened, synthetic, or unread IDs, devnet/localnet IDs, or a Testnet ID on Mainnet. List links separately under "View on Talus Vision". A Vision page is an indexed projection for navigation, not evidence: it never proves registration, invocation, or payment. Useful kinds here are `tool` for a read-back FQN or Tool ID, `tx` for an authorized registration digest after its effects are read back, and `profile` for the beneficiary address.
+
 ## Completion standard
 
 A Tool is locally ready when locked build/test/lint/format checks pass, every output variant and health/metadata/invocation path has deterministic coverage, metadata is secret-free, the selected custom path validates, and any signed HTTP, registration, or staging evidence is stated separately as run, unavailable, or pending.

@@ -131,6 +131,29 @@ PUBLIC_MVR_API_HOSTS = {
     "mainnet.mvr.mystenlabs.com": "mainnet",
 }
 LOCAL_DEVELOPMENT_HOSTS = frozenset({"localhost", "127.0.0.1"})
+TALUS_VISION_HOST = "vision.talus.network"
+_VISION_LINKS_MODULE: Any = None
+
+
+def _vision_links() -> Any:
+    """Load the shared Talus Vision route contract from the bundle scripts."""
+
+    global _VISION_LINKS_MODULE
+    if _VISION_LINKS_MODULE is None:
+        path = ROOT / "scripts" / "vision_links.py"
+        spec = importlib.util.spec_from_file_location("skills_vision_links", path)
+        if spec is None or spec.loader is None:
+            raise ImportError(f"cannot load {path}")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[spec.name] = module
+        previous = sys.dont_write_bytecode
+        sys.dont_write_bytecode = True
+        try:
+            spec.loader.exec_module(module)
+        finally:
+            sys.dont_write_bytecode = previous
+        _VISION_LINKS_MODULE = module
+    return _VISION_LINKS_MODULE
 
 
 def _token(*parts: str) -> str:
@@ -442,6 +465,14 @@ def _classify_public_url(url: str, *, allow_published_documentation: bool = Fals
         return False, "invalid port"
     if parsed.username or parsed.password:
         return False, "credentials are not allowed"
+    if hostname == TALUS_VISION_HOST:
+        if not allow_published_documentation:
+            return False, "Talus Vision links are allowed only in documentation contexts"
+        try:
+            _vision_links().parse_vision_url(url)
+        except ValueError as exc:
+            return False, f"Talus Vision link is not canonical: {exc}"
+        return True, "network-explicit Talus Vision navigation link"
     if parsed.query or parsed.fragment:
         return False, "query parameters and fragments are not allowed"
     scheme = parsed.scheme.casefold()

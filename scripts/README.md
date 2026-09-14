@@ -147,9 +147,34 @@ python3 <skills-bundle>/scripts/testnet_evidence.py \
   --package-id 0x<package-id> --module <module-name>
 ```
 
-The JSON report includes the explicit endpoint, `testnet` network label, the returned official testnet chain identifier, observations, allowlisted queries, response digests, collection time, and a canonical report digest. A wrong chain identifier, null/missing/empty/incomplete requested observation, timeout, HTTP/GraphQL error, malformed JSON, unsupported query, invalid identifier, non-testnet endpoint, or oversized response is a failure. Use the unit tests with an injected transport for deterministic offline coverage, and run the CLI command separately when a live public testnet read is required.
+The JSON report includes the explicit endpoint, `testnet` network label, the returned official testnet chain identifier, observations, navigation-only `vision_links` for returned object/package addresses, allowlisted queries, response digests, collection time, and a canonical report digest. A wrong chain identifier, null/missing/empty/incomplete requested observation, timeout, HTTP/GraphQL error, malformed JSON, unsupported query, invalid identifier, non-testnet endpoint, or oversized response is a failure. Use the unit tests with an injected transport for deterministic offline coverage, and run the CLI command separately when a live public testnet read is required.
 
 Normalized GraphQL module responses must include nonblank package/module identities and complete function/struct connections. GraphQL object responses require owner plus typed Move content or package module content; GraphQL function responses retain complete type-parameter, parameter, and return signatures; GraphQL struct responses retain abilities, type parameters, and typed fields. GraphQL package/module/object connections require nonblank names, fully qualified names, pageInfo, and cursor pagination to exhaustion. Empty collections remain valid only where the protocol permits them; missing shape fields, repeated/missing cursors, and empty entries fail closed.
+
+## Talus Vision navigation links
+
+`vision_links.py` builds Talus Vision explorer links for identifiers that exact read-only evidence already returned. It performs no network access. Every link carries an explicit `?network=testnet` or `?network=mainnet` query, because Vision otherwise defaults to Mainnet or reuses the viewer's last-selected network, and a Testnet ID then opens as not found. Vision has no devnet or localnet view.
+
+```bash
+python3 <skills-bundle>/scripts/vision_links.py --network testnet --kind execution --id 0x<execution-id>
+python3 <skills-bundle>/scripts/vision_links.py --network testnet --kind skill --id 0x<agent-id> --skill-index 0
+```
+
+| Kind | Route | Identifier |
+| --- | --- | --- |
+| `tx` | `/tx/<digest>` | Canonical base58 transaction digest (32 bytes) |
+| `execution` | `/execution/<id>` | DAG Execution object ID |
+| `payment` | `/payment/<id>` | The Execution ID; Vision resolves its `ExecutionPayment` |
+| `task` | `/task/<id>` | Task object ID |
+| `workflow` | `/workflow/<id>` | DAG object ID |
+| `tool` | `/tool/<fqn>` | `domain.name@version` FQN, with `@` encoded as `%40`, or a Tool object ID |
+| `agent` | `/agent/<id>` | Agent (TAP) object ID |
+| `skill` | `/skill/<agent-id>/<index>` | Agent ID plus numeric skill index |
+| `leader` | `/leader/<id>` | Leader capability ID |
+| `profile` | `/profile/<address>` | Wallet, signer, or beneficiary address |
+| `object` | `/object/<id>` | Any other object or package, including reserves, `ExecutionPayment`, vaults, Occurrences, and Invocations |
+
+Object IDs must already be full, lowercase, non-zero `0x` plus 64 hex; the helper never pads a shortened ID. `testnet_evidence.py` emits `vision_links.object` and `vision_links.package` for returned addresses. `validate_skills.py` accepts Vision URLs only in documentation contexts and only in this canonical form. A Vision page is an indexed projection that can lag or differ from chain state; neither the page nor its link is evidence, so keep links in a separate navigation list beside the evidence ledger.
 
 ## Offline validators
 

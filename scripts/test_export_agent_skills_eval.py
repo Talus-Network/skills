@@ -36,10 +36,10 @@ class AgentSkillsEvalExporterTests(unittest.TestCase):
                 (document["skill_name"], case)
                 for case in document["evals"]
             )
-        self.assertEqual(len(cases), 7)
+        self.assertEqual(len(cases), 9)
         self.assertEqual(
             sum(len(case["expectations"]) + 1 for _, case in cases),
-            34,
+            42,
         )
         self.assertTrue(all("assertions" not in case for _, case in cases))
 
@@ -58,7 +58,7 @@ class AgentSkillsEvalExporterTests(unittest.TestCase):
             tap = json.loads(
                 (output / "nexus-tap-development/evals/evals.json").read_text(encoding="utf-8")
             )
-            self.assertEqual(len(payment["evals"]), 1)
+            self.assertEqual(len(payment["evals"]), 2)
             self.assertEqual(len(tap["evals"]), 2)
             for document in (payment, tap):
                 for case in document["evals"]:
@@ -71,7 +71,7 @@ class AgentSkillsEvalExporterTests(unittest.TestCase):
                         case["assertions"],
                     )
             self.assertEqual(manifest["catalog"], "response")
-            self.assertEqual(len(manifest["cases"]), 3)
+            self.assertEqual(len(manifest["cases"]), 4)
             self.assertTrue((output / "agent-skills-eval-manifest.json").is_file())
             self.assertTrue((output / "nexus-tap-development/SKILL.md").is_file())
 

@@ -48,7 +48,7 @@ Record endpoint, network label, allowlisted query methods, response digests, and
 3. Start with read-only gas, Task, Occurrence, and cost inspection, then correlate the exact Execution payment ID.
 4. Read the payment object and preserve `execution_id`, source/policy, budget split, locked vertices, Tool/priority charges, final state, and transaction provenance.
 5. For Tool accounting, inspect the exact Tool, cashier, access policy, inbox, Invocation, and receipt before calling revenue collectable.
-6. Write a compact ledger of IDs, owners, types, versions, digests, amounts, states, and evidence classes (`observed`, `derived`, `unavailable`, or `conflicting`).
+6. Write a compact ledger of IDs, owners, types, versions, digests, amounts, states, and evidence classes (`observed`, `derived`, `unavailable`, or `conflicting`). Follow the payment ledger's separate surface rows for every applicable component, retaining `unavailable` or `conflicting` when a field cannot be read.
 
 ## Mutation gate
 

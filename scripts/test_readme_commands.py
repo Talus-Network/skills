@@ -104,7 +104,7 @@ class TapVmArtifactRoutingTests(unittest.TestCase):
 
 
 class SkillsReadmeCommandTests(unittest.TestCase):
-    def test_public_install_commands_are_release_only(self) -> None:
+    def test_public_install_command_is_separate_from_source_preparation(self) -> None:
         text = README_PATH.read_text(encoding="utf-8")
         selector = "Talus-Network/" + "skills"
         block_match = re.search(
@@ -120,23 +120,8 @@ class SkillsReadmeCommandTests(unittest.TestCase):
         self.assertEqual(len(commands), 1)
         for command in commands:
             self.assertEqual(command, "npx skills add " + selector)
-        self.assertIn("canonical command is release/install UX only", text)
-        self.assertIn("SKILLS_BUNDLE_ROOT", text)
         self.assertNotIn(selector, (ROOT / "scripts/prepare_sources.py").read_text(encoding="utf-8"))
         self.assertNotIn(selector, (ROOT / "scripts/forward_portability.py").read_text(encoding="utf-8"))
-
-    def test_repository_local_entrypoint_runs_without_network(self) -> None:
-        text = README_PATH.read_text(encoding="utf-8")
-        block_match = re.search(r"## Use from a local checkout\n\n```bash\n(.*?)\n```", text, re.DOTALL)
-        self.assertIsNotNone(block_match)
-        block = block_match.group(1)
-        syntax = subprocess.run(["bash", "-n"], input=block, capture_output=True, text=True, check=False)
-        self.assertEqual(syntax.returncode, 0, syntax.stderr)
-        self.assertNotIn("npx " + "skills add", block)
-        environment = dict(os.environ)
-        environment["SKILLS_BUNDLE_ROOT"] = str(ROOT)
-        result = subprocess.run(["bash", "-c", block], cwd=ROOT, env=environment, capture_output=True, text=True, check=False)
-        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_published_setup_authority_is_explicit_and_live_checked(self) -> None:
         text = README_PATH.read_text(encoding="utf-8")

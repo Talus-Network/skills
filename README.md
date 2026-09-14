@@ -10,17 +10,7 @@ Install the complete Skills bundle or select individual skills with the public `
 npx skills add Talus-Network/skills
 ```
 
-This canonical command is release/install UX only. It selects content from the public Skills repository and is separate from source preparation, compiler inputs, and the observed offline build/test proof below.
-
-## Use from a local checkout
-
-```bash
-SKILLS_BUNDLE_ROOT="${SKILLS_BUNDLE_ROOT:-$(pwd)}"
-test -f "$SKILLS_BUNDLE_ROOT/scripts/validate_skills.py"
-python3 -B "$SKILLS_BUNDLE_ROOT/scripts/validate_skills.py"
-```
-
-Run the validator from the checkout or installed bundle before loading a skill. Each skill directory can then be supplied directly to an Agent Skills-compatible runtime; install only the capabilities needed for the active project so unrelated instructions do not compete for context.
+Choose your coding assistant and the skills needed for your project in the installer. Once installed, ask your assistant to use the relevant skill by name.
 
 ## Skills
 
@@ -45,71 +35,6 @@ The skills default to repository-owned examples, isolated build/test work, dry-r
 ## Portable source evidence
 
 The source helper downloads only three reviewed anonymous public archives when bundled material is insufficient: [nexus-sdk](https://github.com/Talus-Network/nexus-sdk), [nexus-move-packages](https://github.com/Talus-Network/nexus-move-packages), and the pinned [Sui framework source](https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba) matching `sui 1.78.0-d8459684b41e`. It rejects local paths, SSH URLs, unknown repository selectors, and unapproved source roots. The Move package archive supplies the six public interface packages and their supporting closure; the Sui archive supplies only the framework packages needed for local Move compilation, and neither declaration set is an executable mock.
-
-From a fresh consumer workspace, resolve the helper from the installed bundle and keep its manifest for cleanup:
-
-```bash
-SKILLS_BUNDLE_ROOT="${SKILLS_BUNDLE_ROOT:?Set SKILLS_BUNDLE_ROOT to this installed Skills bundle root}"
-SOURCE_HELPER="$SKILLS_BUNDLE_ROOT/scripts/prepare_sources.py"
-test -f "$SOURCE_HELPER"
-SOURCE_MANIFEST=""
-cleanup_sources() {
-  status="${1:-$?}"
-  trap - EXIT INT TERM
-  cleanup_status=0
-  if [ -n "${SOURCE_MANIFEST:-}" ]; then
-    python3 "$SOURCE_HELPER" cleanup --manifest "$SOURCE_MANIFEST" || cleanup_status=$?
-  fi
-  if [ "$cleanup_status" -ne 0 ]; then
-    printf 'source cleanup failed (status %s)\n' "$cleanup_status" >&2
-    if [ "$status" -eq 0 ]; then
-      status="$cleanup_status"
-    fi
-  fi
-  exit "$status"
-}
-trap cleanup_sources EXIT
-trap 'cleanup_sources 130' INT
-trap 'cleanup_sources 143' TERM
-source_prepare_status=0
-SOURCE_MANIFEST=""
-SOURCE_MANIFEST="$(python3 "$SOURCE_HELPER" prepare --only nexus-sdk --only nexus-move-packages --only sui --print-manifest-path)" || source_prepare_status=$?
-if [ "$source_prepare_status" -ne 0 ] || [ -z "$SOURCE_MANIFEST" ]; then
-  SOURCE_MANIFEST=""
-  if [ "$source_prepare_status" -eq 0 ]; then source_prepare_status=1; fi
-  printf 'source preparation failed (status %s)\n' "$source_prepare_status" >&2
-  exit "${source_prepare_status:-1}"
-fi
-SDK_ROOT=""
-sdk_root_status=0
-SDK_ROOT="$(python3 "$SOURCE_HELPER" root --manifest "$SOURCE_MANIFEST" --repo nexus-sdk)" || sdk_root_status=$?
-if [ "$sdk_root_status" -ne 0 ] || [ -z "$SDK_ROOT" ]; then
-  SDK_ROOT=""
-  if [ "$sdk_root_status" -eq 0 ]; then sdk_root_status=1; fi
-  printf 'nexus-sdk root resolution failed (status %s)\n' "$sdk_root_status" >&2
-  exit "${sdk_root_status:-1}"
-fi
-MOVE_PACKAGES_ROOT=""
-move_packages_root_status=0
-MOVE_PACKAGES_ROOT="$(python3 "$SOURCE_HELPER" root --manifest "$SOURCE_MANIFEST" --repo nexus-move-packages)" || move_packages_root_status=$?
-if [ "$move_packages_root_status" -ne 0 ] || [ -z "$MOVE_PACKAGES_ROOT" ]; then
-  MOVE_PACKAGES_ROOT=""
-  if [ "$move_packages_root_status" -eq 0 ]; then move_packages_root_status=1; fi
-  printf 'nexus-move-packages root resolution failed (status %s)\n' "$move_packages_root_status" >&2
-  exit "${move_packages_root_status:-1}"
-fi
-SUI_ROOT=""
-sui_root_status=0
-SUI_ROOT="$(python3 "$SOURCE_HELPER" root --manifest "$SOURCE_MANIFEST" --repo sui)" || sui_root_status=$?
-if [ "$sui_root_status" -ne 0 ] || [ -z "$SUI_ROOT" ]; then
-  SUI_ROOT=""
-  if [ "$sui_root_status" -eq 0 ]; then sui_root_status=1; fi
-  printf 'sui root resolution failed (status %s)\n' "$sui_root_status" >&2
-  exit "${sui_root_status:-1}"
-fi
-```
-
-Use only repository-relative paths below those verified roots. For native Move builds, use only the two framework package directories below `SUI_ROOT`. If a public archive is unavailable or fails its pinned checksum/tree checks, report the source-evidence gap and stop rather than looking for another source.
 
 ## Public Move Registry dependencies
 

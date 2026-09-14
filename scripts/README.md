@@ -1,5 +1,18 @@
 # Skills source and evidence helpers
 
+## External evaluator export
+
+The canonical catalogs under each skill's `evals/` directory use `expectations`. The standard `scripts/export_agent_skills_eval.py` creates a new evaluator bundle and maps every expectation plus the canonical `expected_output` criterion to the `assertions` field understood by `agent-skills-eval`; it never overwrites the source catalog.
+
+Export the execution/routing cases (the default) or the separate supplied-input response cases deliberately:
+
+```bash
+python3 -B scripts/export_agent_skills_eval.py --output-dir <disposable-eval-bundle> --catalog response
+npx agent-skills-eval <disposable-eval-bundle> --target <model> --judge <model> --baseline --strict
+```
+
+Use `--skill <skill-name>` and repeatable `--case <case-id>` or `--case <skill-name>/<case-id>` selectors to keep a run focused. `--catalog all` combines both catalogs after checking for duplicate IDs. The generated `agent-skills-eval-manifest.json` records selected cases and the adaptation; each exported skill's `agent-skills-eval-source-catalogs.json` records the source catalog paths and SHA-256 digests. The external evaluator's chat responses still do not prove automatic skill routing or command, compiler, provider, chain, or transaction execution without separately supplied tools and fixtures.
+
 ## Skill evaluation runner
 
 The repository includes `run_skill_evals.py`, a Python standard-library harness for the small scenario catalogs in each skill. It validates explicit, implicit, contextual, and negative trigger metadata, requires each catalog root to be a JSON object, and resolves `bundled:` references from the selected bundle root without network access. The harness cannot prove Codex's live automatic skill selection, but its explicit command runs with the selected local bundle discoverable at `$CWD/.agents/skills`.

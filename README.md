@@ -159,4 +159,6 @@ python3 -B -m unittest discover -s scripts -p 'test_*.py'
 python3 -B -m unittest discover -s nexus-tap-development/scripts -p 'test_*.py'
 ```
 
+The standard-library `scripts/run_skill_evals.py` validates the five catalogs and can plan, run an explicitly supplied command, or replay saved traces. Each run records a selected skill snapshot, source digests, effective argv, raw JSONL stdout, stderr, and declared artifacts in a fresh case directory. A temporary cwd/snapshot organizes files but does not change the explicit command's OS permissions. Offline traces cannot prove Codex automatic selection, live provider or chain state, published-bytecode execution, registration, or settlement; missing activation is unknown for positive and negative cases, and ungraded behavior rubrics keep overall status `unknown` with `manual_status: pending`. Use `--plan` to inspect cases without execution and `--replay <saved-run> --output-dir <new-dir>` to rescore saved evidence without rerunning a command. The documented Codex command includes `--skip-git-repo-check` for its temporary non-Git cwd.
+
 See [the source helper reference](scripts/README.md) and [the testnet evidence reference](scripts/README.md#read-only-sui-testnet-evidence) for the complete evidence and cleanup contract.

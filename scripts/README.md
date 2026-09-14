@@ -1,5 +1,42 @@
 # Skills source and evidence helpers
 
+## Skill evaluation runner
+
+The repository includes `run_skill_evals.py`, a Python standard-library harness for the small scenario catalogs in each skill. It validates explicit, implicit, contextual, and negative trigger metadata, requires each catalog root to be a JSON object, and resolves `bundled:` references from the selected bundle root without network access. The harness cannot prove Codex's live automatic skill selection, but its explicit command runs with the selected local bundle discoverable at `$CWD/.agents/skills`.
+
+Plan cases before execution:
+
+`--plan`, `--list`, and `--replay` are mutually exclusive terminal modes; supplying more than one is a usage error.
+
+```bash
+python3 -B scripts/run_skill_evals.py --plan \
+  --skill nexus-tap-development --output-dir /tmp/nexus-skill-eval-plan
+```
+
+Run only an explicitly supplied command. Every case gets a new output directory containing a copied evidence snapshot under `snapshot/`, a temporary command cwd under `workspace`, `workspace/.agents/skills` with the selected skill, explicitly routed sibling skills, shared production scripts/resources, and selected fixtures. `evals/` catalogs, expected-answer data, Git metadata, caches, and evaluator tests stay out of the command-visible bundle. `SKILLS_BUNDLE_ROOT` points to `workspace/.agents/skills`; `SKILL_EVAL_SNAPSHOT_ROOT` and `SKILL_EVAL_SKILL_ROOT` remain available for diagnostics. Each case records `metadata.json`, raw stdout `trace.jsonl`, `stderr.log`, declared artifacts, and `result.json`; metadata includes a SHA-256 `bundle_manifest` for every regular file visible under the bundle root. runner recomputes that regular-file manifest after producer exits; added, removed, or modified regular files, plus invalid symlink or special entries, fail the live case's deterministic grade. Empty-directory-only changes are outside this file-content guarantee. `summary.json` records aggregate states. Command cwd bundle filesystem isolation aids reproducibility; the explicit command keeps its normal process/runtime permissions. Codex example uses `--skip-git-repo-check` because the temporary cwd is not a Git checkout:
+
+```bash
+python3 -B scripts/run_skill_evals.py \
+  --skill nexus-tap-development \
+  --case tap-api-app-only \
+  --output-dir /tmp/nexus-skill-eval-run \
+  --command 'codex exec --json --full-auto --skip-git-repo-check {prompt}'
+```
+
+The command receives only the case prompt and case ID; expected outputs and rubric text stay in grading metadata and are never passed to the command. Structured skill-invocation events are the only activation evidence: assistant prose, prompt text, and `command_execution` starts do not count. Missing invocation is `unknown` for both positive and negative cases. Missing or malformed JSONL, missing allowlisted terminal event, any explicit terminal status outside the documented success set (`complete`, `completed`, `success`, `succeeded`), terminal failure/error, command failure, timeout, launch error, invalid artifact root, or missing/symlinked artifact fails closed. A successful command with ungraded behavior rubrics has `deterministic_status: pass`, overall `status: unknown`, and `manual_status: pending`. Re-grade saved traces without rerunning the command model:
+
+```bash
+python3 -B scripts/run_skill_evals.py \
+  --replay /tmp/nexus-skill-eval-run \
+  --output-dir /tmp/nexus-skill-eval-replay
+```
+
+Replay accepts repeatable `--skill` and `--case` selectors; repeated skills form a union and case IDs intersect that saved owning-skill scope. Case IDs come from each saved `metadata.json`, so a case directory can be renamed during relocation without changing its selector or emitted case ID. Unknown or no-match selections fail before case results are created. `--command` is rejected with `--replay`, and replay never launches a producer command.
+
+Replay validates the saved regular-file `bundle_manifest` inventory and contents against the snapshot workspace before copying or grading; saved symlink or special entries fail closed, while empty-directory-only changes are outside this integrity guarantee; copies saved raw trace, stderr, workspace, metadata, bundle snapshot, and artifacts into a new output directory before writing deterministic/manual-pending results. Altered, added, removed, symlinked, or escaped bundle files fail closed. Catalog replay case IDs must be a single safe path component using letters, numbers, dot, underscore, and hyphen; traversal, absolute, dot, and separator-bearing IDs are rejected before output creation. Cross-routing cases set `should_trigger: false` and declare an `expected_skill` sibling skill: a structured invocation of the sibling passes activation evidence, an owning-skill invocation fails, and missing invocation remains `unknown`. All recognized terminal events are inspected, so any terminal failure or unsupported status fails completion even if another terminal event succeeds. Replay recomputes aggregate status and artifact checks. Real provider, chain, beta VM, registration, settlement, wallet, and automatic-selection evidence requires its separately authorized workflow.
+
+Replay accepts only the recorded evidence boundary. Every `bundled:` source must be a safe relative path to a non-symlinked file in the saved snapshot, saved snapshot selected-skill provenance must match case metadata, and saved bundled digests and the complete bundle manifest must match snapshot content. HTTPS sources are syntax-checked without fetching and retain a recorded `null` digest; replay never consults the current Skills checkout. Recognized wrong or mixed skill selection fails activation grading; no recognized selection remains `unknown`.
+
 ## Public source preparation
 
 `prepare_sources.py` creates a disposable manifest-backed workspace and downloads only three reviewed anonymous public GitHub archives over HTTPS: `Talus-Network/nexus-sdk`, `Talus-Network/nexus-move-packages`, and `MystenLabs/sui` at `d8459684b41eb09ab23fe16a9dd84173270bbaba`, the source revision for installed `sui 1.78.0-d8459684b41e`. Archive identity, exact refs/checksums, required paths, extracted-tree digests, and cleanup ownership are recorded in the manifest. The helper never searches the host filesystem for a source tree.

@@ -19,7 +19,8 @@ EXPECTED_SKILLS = {
     "nexus-tap-development",
     "nexus-onchain-task-debugging",
     "nexus-cli-payment-tracking",
-}
+ }
+SAFE_CASE_ID_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*\Z")
 DEVELOPMENT_SKILLS = frozenset(
     {
         "nexus-offchain-tool-development",
@@ -27,22 +28,25 @@ DEVELOPMENT_SKILLS = frozenset(
         "nexus-tap-development",
     }
 )
-DEVELOPMENT_GRILL_HEADING = "## Embedded `$grill-me` requirements/design phase"
-DEVELOPMENT_GRILL_MARKERS = (
-    "goal/outcome",
-    "requirements and observable behavior",
-    "inputs and integration boundary",
+DEVELOPMENT_CONTRACT_HEADING = "## Task contract before setup"
+DEVELOPMENT_CONTRACT_MARKERS = (
+    "goal and outcome",
+    "observable requirements",
+    "integration boundary",
+    "in-scope",
     "non-goals",
     "authorization",
-    "acceptance evidence/tests",
+    "acceptance evidence",
     "compact implementation design",
-    "exactly one question at a time",
-    "recommended answer",
-    "approved public docs",
-    "shared understanding complete",
-    "do not install or invoke another skill",
-    "do not run development commands",
+    "reversible assumptions",
+    "ask one concise question",
+    "unresolved material",
+    "pause dependent work",
+    "continue useful authorized independent",
+    "no default grilling ritual",
 )
+DEVELOPMENT_ROUTE_HEADING = "## Route before setup"
+DEVELOPMENT_SOURCE_HEADING = "## Public source"
 DEVELOPMENT_ACTION_MARKERS = (
     "skills_bundle_root=",
     "source_helper=",
@@ -81,6 +85,9 @@ PUBLISHED_NEXUS_DOCS_PATHS: frozenset[str] = frozenset(
         "/guides/nexus-api/tutorial/03-stream-events",
         "/guides/nexus-api/tutorial/04-assemble-the-dapp",
         "/guides/nexus-api/tutorial/05-port-to-react",
+        "/guides/agent-usage/execute-and-settle-agent",
+        "/guides/tap-development/build-tap-move-package",
+        "/guides/tokenomics/fund-agent-and-user-executions",
         "/guides/tool-development/build-offchain-tool",
         "/guides/tool-development/build-onchain-tool",
         "/guides/tool-development/tool-communication",
@@ -240,12 +247,23 @@ def validate_eval_file(skill: str, path: Path, errors: list[str]) -> None:
             errors.append(f"{where}: eval must be an object")
             continue
         eval_id = entry.get("id")
-        if not isinstance(eval_id, (str, int)) or isinstance(eval_id, bool):
-            errors.append(f"{where}: id must be a string or integer")
+        if not isinstance(eval_id, str) or SAFE_CASE_ID_RE.fullmatch(eval_id) is None:
+            errors.append(f"{where}: id must be a single safe path component")
         elif eval_id in seen:
             errors.append(f"{where}: duplicate id {eval_id!r}")
         else:
             seen.add(eval_id)
+        expected_skill = entry.get("expected_skill")
+        if expected_skill is not None:
+            if not isinstance(expected_skill, str) or expected_skill not in EXPECTED_SKILLS:
+                errors.append(f"{where}: expected_skill must name a known sibling skill")
+            elif expected_skill == skill:
+                errors.append(f"{where}: expected_skill must differ from owning skill")
+            elif entry.get("should_trigger") is not False:
+                errors.append(
+                    f"{where}: expected_skill requires should_trigger=false for sibling routing"
+                )
+
         for key in ("prompt", "expected_output"):
             if not isinstance(entry.get(key), str) or not entry[key].strip():
                 errors.append(f"{where}: {key} must be a non-empty string")
@@ -257,36 +275,56 @@ def validate_eval_file(skill: str, path: Path, errors: list[str]) -> None:
             errors.append(f"{where}: expectations must contain at least two observable strings")
 
 
-def validate_development_grill(skill: str, text: str, errors: list[str]) -> None:
-    """Require the embedded requirements/design gate before development actions."""
+def validate_development_contract(skill: str, text: str, errors: list[str]) -> None:
+    """Require a compact contract and routing section before setup guidance."""
 
     if skill not in DEVELOPMENT_SKILLS:
         return
     lowered = text.casefold()
-    heading = DEVELOPMENT_GRILL_HEADING.casefold()
+    heading = DEVELOPMENT_CONTRACT_HEADING.casefold()
     if heading not in lowered:
-        errors.append(f"{skill}/SKILL.md: missing embedded development requirements gate")
+        errors.append(f"{skill}/SKILL.md: missing task contract before setup")
         return
     gate_start = lowered.index(heading)
-    gate_end = lowered.find("\nfor version-sensitive setup", gate_start)
+    gate_end = lowered.find("\n## ", gate_start + len(heading))
     if gate_end == -1:
         gate_end = len(lowered)
     gate = lowered[gate_start:gate_end]
-    setup_index = lowered.find("for version-sensitive setup")
-    if setup_index != -1 and gate_start >= setup_index:
-        errors.append(f"{skill}/SKILL.md: development gate must precede setup guidance")
-    for marker in DEVELOPMENT_GRILL_MARKERS:
+    route_start = lowered.find(DEVELOPMENT_ROUTE_HEADING.casefold())
+    if route_start == -1:
+        errors.append(f"{skill}/SKILL.md: missing route-before-setup section")
+    elif route_start <= gate_start:
+        errors.append(f"{skill}/SKILL.md: route section must follow the task contract")
+    source_start = lowered.find(DEVELOPMENT_SOURCE_HEADING.casefold())
+    if source_start == -1:
+        errors.append(f"{skill}/SKILL.md: missing public-source section")
+    elif route_start != -1 and route_start >= source_start:
+        errors.append(f"{skill}/SKILL.md: route section must precede public-source setup")
+    for marker in DEVELOPMENT_CONTRACT_MARKERS:
         if marker.casefold() not in gate:
-            errors.append(f"{skill}/SKILL.md: development gate is missing {marker!r}")
-    action_positions = [lowered.index(marker.casefold()) for marker in DEVELOPMENT_ACTION_MARKERS if marker.casefold() in lowered]
-    if not action_positions or gate_start >= min(action_positions):
-        errors.append(f"{skill}/SKILL.md: development gate must precede development actions")
-    prefix = lowered[:gate_start]
-    if any(marker.casefold() in prefix for marker in DEVELOPMENT_ACTION_MARKERS):
-        errors.append(f"{skill}/SKILL.md: development actions appear before the requirements gate")
-    for forbidden in ("skill://", "grill-me/", "pip install"):
-        if forbidden in gate:
-            errors.append(f"{skill}/SKILL.md: embedded gate must remain self-contained")
+            errors.append(f"{skill}/SKILL.md: task contract is missing {marker!r}")
+    action_positions = [
+        lowered.index(marker.casefold())
+        for marker in DEVELOPMENT_ACTION_MARKERS
+        if marker.casefold() in lowered
+    ]
+    if action_positions:
+        first_action = min(action_positions)
+        if gate_start >= first_action:
+            errors.append(f"{skill}/SKILL.md: task contract must precede development actions")
+        if route_start == -1 or route_start >= first_action:
+            errors.append(f"{skill}/SKILL.md: route section must precede development actions")
+    for forbidden in (
+        "embedded `$grill-me` requirements/design phase",
+        "ask exactly one question at a time",
+        "recommended answer",
+        "shared understanding complete",
+        "do not install or invoke another skill",
+        "do not run development commands",
+        "skill://",
+    ):
+        if forbidden.casefold() in lowered:
+            errors.append(f"{skill}/SKILL.md: obsolete development ceremony {forbidden!r}")
 
 
 def _text_files(root: Path) -> Iterable[Path]:
@@ -711,7 +749,7 @@ def main(argv: list[str] | None = None) -> int:
             errors.append(f"{skill}/SKILL.md: missing trigger description")
         if len(list(skill_dir.rglob("*.md"))) < 2:
             errors.append(f"{skill}: expected at least one focused reference")
-        validate_development_grill(skill, text, errors)
+        validate_development_contract(skill, text, errors)
         for path in skill_dir.rglob("*.md"):
             validate_links(path, path.read_text(encoding="utf-8"), errors)
         if eval_file.is_file():

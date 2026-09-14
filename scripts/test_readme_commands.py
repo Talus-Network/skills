@@ -20,6 +20,45 @@ sys.dont_write_bytecode = True
 ROOT = Path(__file__).resolve().parents[1]
 HELPER_PATH = ROOT / "scripts" / "prepare_sources.py"
 README_PATH = ROOT / "README.md"
+SKILL_ENTRYPOINT_PATHS = tuple(
+    ROOT / skill / "SKILL.md"
+    for skill in (
+        "nexus-cli-payment-tracking",
+        "nexus-offchain-tool-development",
+        "nexus-onchain-task-debugging",
+        "nexus-onchain-tool-development",
+        "nexus-tap-development",
+    )
+)
+SOURCE_REFERENCE_PATHS = tuple(
+    ROOT / skill / "references/source-preparation.md"
+    for skill in (
+        "nexus-cli-payment-tracking",
+        "nexus-offchain-tool-development",
+        "nexus-onchain-task-debugging",
+        "nexus-onchain-tool-development",
+        "nexus-tap-development",
+    )
+)
+
+
+def _extract_bootstrap_block(path: Path) -> str:
+    blocks = re.findall(r"```bash\n(.*?)\n```", path.read_text(encoding="utf-8"), re.DOTALL)
+    block = next((candidate for candidate in blocks if "trap cleanup_sources EXIT" in candidate), None)
+    if block is None:
+        raise AssertionError(f"missing executable source-preparation block: {path}")
+    if path == ROOT / "scripts/README.md":
+        block = block.replace("<skills-bundle>", str(ROOT))
+    return block
+
+
+def _extract_metadata_block(path: Path) -> str:
+    text = path.read_text(encoding="utf-8")
+    section = text.split("## 2. Inspect metadata without mutating the network", 1)[1].split("## 3.", 1)[0]
+    blocks = re.findall(r"```bash\n(.*?)\n```", section, re.DOTALL)
+    if not blocks:
+        raise AssertionError(f"missing executable metadata block: {path}")
+    return blocks[0]
 
 
 def load_helper():
@@ -145,11 +184,7 @@ class SkillsReadmeCommandTests(unittest.TestCase):
     def test_public_source_bootstraps_clean_once_and_exit_on_signal(self) -> None:
         skill_paths = (
             ROOT / "scripts/README.md",
-            ROOT / "nexus-offchain-tool-development/SKILL.md",
-            ROOT / "nexus-tap-development/SKILL.md",
-            ROOT / "nexus-onchain-task-debugging/SKILL.md",
-            ROOT / "nexus-onchain-tool-development/SKILL.md",
-            ROOT / "nexus-cli-payment-tracking/SKILL.md",
+            *SOURCE_REFERENCE_PATHS,
         )
         with tempfile.TemporaryDirectory(prefix="skills-trap-test-") as directory:
             directory_path = Path(directory)
@@ -175,15 +210,7 @@ class SkillsReadmeCommandTests(unittest.TestCase):
             environment["SKILLS_BUNDLE_ROOT"] = str(ROOT)
             for skill_path in skill_paths:
                 text = skill_path.read_text(encoding="utf-8")
-                block_match = re.search(
-                    r"```bash\n(.*?trap cleanup_sources EXIT.*?trap 'cleanup_sources 143' TERM.*?SOURCE_MANIFEST=.*?)\n```",
-                    text,
-                    re.DOTALL,
-                )
-                self.assertIsNotNone(block_match, skill_path)
-                block = block_match.group(1)
-                if skill_path == ROOT / "scripts/README.md":
-                    block = block.replace("<skills-bundle>", str(ROOT))
+                block = _extract_bootstrap_block(skill_path)
                 syntax = subprocess.run(["bash", "-n"], input=block, capture_output=True, text=True, check=False)
                 self.assertEqual(syntax.returncode, 0, syntax.stderr)
                 self.assertLess(block.index("trap cleanup_sources EXIT"), block.index('SOURCE_MANIFEST="$(python3'))
@@ -214,11 +241,7 @@ class SkillsReadmeCommandTests(unittest.TestCase):
         skill_paths = (
             ROOT / "README.md",
             ROOT / "scripts/README.md",
-            ROOT / "nexus-offchain-tool-development/SKILL.md",
-            ROOT / "nexus-tap-development/SKILL.md",
-            ROOT / "nexus-onchain-task-debugging/SKILL.md",
-            ROOT / "nexus-onchain-tool-development/SKILL.md",
-            ROOT / "nexus-cli-payment-tracking/SKILL.md",
+            *SOURCE_REFERENCE_PATHS,
         )
         with tempfile.TemporaryDirectory(prefix="skills-cleanup-failure-test-") as directory:
             directory_path = Path(directory)
@@ -242,22 +265,7 @@ class SkillsReadmeCommandTests(unittest.TestCase):
             environment["FAKE_LOG"] = str(log_path)
             environment["SKILLS_BUNDLE_ROOT"] = str(ROOT)
             for skill_path in skill_paths:
-                if skill_path == ROOT / "README.md":
-                    block_match = re.search(
-                        r"## Portable source evidence\n\n.*?```bash\n(.*?)\n```",
-                        skill_path.read_text(encoding="utf-8"),
-                        re.DOTALL,
-                    )
-                else:
-                    block_match = re.search(
-                        r"```bash\n(.*?trap cleanup_sources EXIT.*?trap 'cleanup_sources 143' TERM.*?SOURCE_MANIFEST=.*?)\n```",
-                        skill_path.read_text(encoding="utf-8"),
-                        re.DOTALL,
-                    )
-                self.assertIsNotNone(block_match, skill_path)
-                block = block_match.group(1)
-                if skill_path == ROOT / "scripts/README.md":
-                    block = block.replace("<skills-bundle>", str(ROOT))
+                block = _extract_bootstrap_block(skill_path)
                 self.assertEqual(subprocess.run(["bash", "-n"], input=block, capture_output=True, text=True).returncode, 0)
 
                 environment["FAIL_CLEANUP"] = "23"
@@ -295,11 +303,7 @@ class SkillsReadmeCommandTests(unittest.TestCase):
         bootstrap_paths = (
             ROOT / "README.md",
             ROOT / "scripts/README.md",
-            ROOT / "nexus-offchain-tool-development/SKILL.md",
-            ROOT / "nexus-tap-development/SKILL.md",
-            ROOT / "nexus-onchain-task-debugging/SKILL.md",
-            ROOT / "nexus-onchain-tool-development/SKILL.md",
-            ROOT / "nexus-cli-payment-tracking/SKILL.md",
+            *SOURCE_REFERENCE_PATHS,
         )
         with tempfile.TemporaryDirectory(prefix="skills-bootstrap-failure-test-") as directory:
             directory_path = Path(directory)
@@ -324,22 +328,7 @@ class SkillsReadmeCommandTests(unittest.TestCase):
             environment["FAKE_LOG"] = str(log_path)
             environment["SKILLS_BUNDLE_ROOT"] = str(ROOT)
             for bootstrap_path in bootstrap_paths:
-                if bootstrap_path == ROOT / "README.md":
-                    block_match = re.search(
-                        r"## Portable source evidence\n\n.*?```bash\n(.*?)\n```",
-                        bootstrap_path.read_text(encoding="utf-8"),
-                        re.DOTALL,
-                    )
-                else:
-                    block_match = re.search(
-                        r"```bash\n(.*?trap cleanup_sources EXIT.*?trap 'cleanup_sources 143' TERM.*?SOURCE_MANIFEST=.*?)\n```",
-                        bootstrap_path.read_text(encoding="utf-8"),
-                        re.DOTALL,
-                    )
-                self.assertIsNotNone(block_match, bootstrap_path)
-                block = block_match.group(1)
-                if bootstrap_path == ROOT / "scripts/README.md":
-                    block = block.replace("<skills-bundle>", str(ROOT))
+                block = _extract_bootstrap_block(bootstrap_path)
                 self.assertEqual(
                     subprocess.run(["bash", "-n"], input=block, capture_output=True, text=True).returncode,
                     0,
@@ -393,8 +382,120 @@ class SkillsReadmeCommandTests(unittest.TestCase):
                     self.assertEqual(sum(f"--repo {root_name}" in call for call in root_calls), 1, (bootstrap_path, root_name))
                     self.assertEqual(sum(" cleanup " in f" {call} " for call in root_calls), 1, (bootstrap_path, root_name))
                     self.assertNotIn("stale-root", failed_root.stderr, (bootstrap_path, root_name))
-                environment.pop("FAIL_ROOT", None)
-                environment.pop("FAIL_ROOT_STATUS", None)
+            environment.pop("FAIL_ROOT", None)
+            environment.pop("FAIL_ROOT_STATUS", None)
+
+    def test_skill_entrypoints_link_their_source_preparation_reference(self) -> None:
+        for skill_path, reference_path in zip(SKILL_ENTRYPOINT_PATHS, SOURCE_REFERENCE_PATHS):
+            text = skill_path.read_text(encoding="utf-8")
+            with self.subTest(skill=skill_path):
+                self.assertIn("references/source-preparation.md", text)
+                self.assertTrue(reference_path.is_file())
+
+    def test_skill_source_preparation_references_use_canonical_contract(self) -> None:
+        for reference_path in SOURCE_REFERENCE_PATHS:
+            text = reference_path.read_text(encoding="utf-8")
+            with self.subTest(reference=reference_path):
+                self.assertIn("scripts/prepare_sources.py", text)
+                self.assertIn("nexus-sdk", text)
+                self.assertIn("nexus-move-packages", text)
+                self.assertIn("sui", text)
+                self.assertIn("cleanup", text.casefold())
+                self.assertIn("read-only", text.casefold())
+                self.assertNotIn("/home/", text)
+                self.assertNotIn("~/.ssh", text)
+
+    def test_offchain_metadata_block_propagates_status_and_cleans_directory(self) -> None:
+        metadata_path = ROOT / "nexus-offchain-tool-development/references/verification.md"
+        block = _extract_metadata_block(metadata_path)
+        self.assertIn("set -eu", block)
+
+        one_tool = {
+            "fqn": "com.example.weather.forecast@1",
+            "url": "http://localhost/weather",
+            "description": "normalized forecast",
+            "timeout": 30,
+            "input_schema": {"type": "object"},
+            "output_schema": {"oneOf": [{"type": "object"}]},
+        }
+        with tempfile.TemporaryDirectory(prefix="skills-metadata-status-test-") as directory:
+            directory_path = Path(directory)
+            fake_bin = directory_path / "bin"
+            fake_bin.mkdir()
+            temp_root = directory_path / "tmp"
+            temp_root.mkdir()
+            payload_path = directory_path / "metadata.json"
+            cwd_path = directory_path / "metadata-cwd"
+            manifest_path = directory_path / "Cargo.toml"
+            manifest_path.write_text("[package]\nname = \"metadata-status-test\"\n", encoding="utf-8")
+            manifest_record_path = directory_path / "metadata-manifest"
+            fake_cargo = fake_bin / "cargo"
+            fake_cargo.write_text(
+                "#!/bin/sh\n"
+                "pwd > \"$CARGO_METADATA_CWD\"\n"
+                "manifest_path=\"\"\n"
+                "while [ \"$#\" -gt 0 ]; do\n"
+                "  if [ \"$1\" = \"--manifest-path\" ] && [ \"$#\" -ge 2 ]; then\n"
+                "    manifest_path=\"$2\"\n"
+                "    shift 2\n"
+                "  else\n"
+                "    shift\n"
+                "  fi\n"
+                "done\n"
+                "[ -f \"$manifest_path\" ] || exit 23\n"
+                "printf '%s\\n' \"$manifest_path\" > \"$CARGO_METADATA_MANIFEST\"\n"
+                "cat \"$CARGO_METADATA_PAYLOAD\"\n"
+                "exit \"${CARGO_METADATA_STATUS:-0}\"\n",
+                encoding="utf-8",
+            )
+            fake_cargo.chmod(0o755)
+
+            base_environment = dict(os.environ)
+            base_environment.update(
+                {
+                    "PATH": f"{fake_bin}:{base_environment['PATH']}",
+                    "TMPDIR": str(temp_root),
+                    "CARGO_METADATA_PAYLOAD": str(payload_path),
+                    "CARGO_METADATA_CWD": str(cwd_path),
+                    "CARGO_METADATA_MANIFEST": str(manifest_record_path),
+                }
+            )
+            cases = (
+                ("one-tool-absolute", [one_tool], "0", 0, str(manifest_path)),
+                (
+                    "two-tools-relative",
+                    [one_tool, {**one_tool, "fqn": "com.example.weather.other@1"}],
+                    "0",
+                    1,
+                    manifest_path.name,
+                ),
+                ("producer-failure-relative", [one_tool], "7", 7, manifest_path.name),
+            )
+            for name, payload, producer_status, expected_status, manifest_value in cases:
+                with self.subTest(case=name):
+                    payload_path.write_text(json.dumps(payload), encoding="utf-8")
+                    cwd_path.unlink(missing_ok=True)
+                    manifest_record_path.unlink(missing_ok=True)
+                    environment = dict(base_environment)
+                    environment["TOOL_MANIFEST"] = manifest_value
+                    environment["CARGO_METADATA_STATUS"] = producer_status
+                    result = subprocess.run(
+                        ["bash", "-c", block],
+                        cwd=directory_path,
+                        env=environment,
+                        capture_output=True,
+                        text=True,
+                        check=False,
+                    )
+                    self.assertEqual(result.returncode, expected_status, result.stderr)
+                    self.assertTrue(cwd_path.is_file())
+                    self.assertTrue(manifest_record_path.is_file())
+                    self.assertEqual(
+                        Path(manifest_record_path.read_text(encoding="utf-8").strip()).resolve(),
+                        manifest_path.resolve(),
+                    )
+                    metadata_directory = Path(cwd_path.read_text(encoding="utf-8").strip())
+                    self.assertFalse(metadata_directory.exists())
 
 
 if __name__ == "__main__":

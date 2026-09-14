@@ -69,6 +69,10 @@ Keep the provider key in server-only runtime configuration and use a same-origin
 3. Classify each command as read-only inspection, local build/test, beta published-bytecode VM test, structural validation, or shared-network mutation before execution.
 4. State explicitly whether evidence is structural, repository-owned, read-only Testnet, API projection, or live transaction evidence. Do not present one category as another.
 
+## Talus Vision links
+
+After exact read-only evidence returns an identifier, you may add a navigation link with the bundle-root `scripts/vision_links.py` helper, for example `python3 "$SKILLS_BUNDLE_ROOT/scripts/vision_links.py" --network testnet --kind agent --id 0x<agent-id>`. Keep the explicit `?network=` query it emits; without it Vision falls back to Mainnet or the viewer's last-used network. Link only full identifiers returned by the verifying read, on that read's network (Testnet for the bundled helper). Never link placeholders, shortened, synthetic, or unread IDs, devnet/localnet IDs, or a Testnet ID on Mainnet. List links separately under "View on Talus Vision". A Vision page is an indexed projection for navigation, not evidence: it never proves registration, execution, or settlement. Useful kinds here are `agent` for the TAP, `skill` with `--skill-index`, `workflow` for the DAG, and `execution`; an API application may render the same network-explicit routes.
+
 ## Completion standard
 
 A TAP application is locally ready when relay tests, relevant frontend typecheck/build, replay/pagination cases, and synthetic-key checks pass. A TAP package is locally ready when package tests, direct/delayed fixture paths, dependency closure, artifact validator, and applicable beta VM gate pass. Report live API, wallet, registration, execution, and settlement evidence separately.

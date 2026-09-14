@@ -74,6 +74,8 @@ python3 "$SKILLS_BUNDLE_ROOT/scripts/testnet_evidence.py" \
 
 The endpoint, network label, query methods, response digest, and timestamp are retained in the JSON report. An unavailable endpoint, malformed response, wrong network, or missing identifier is a concrete evidence failure; structural fixtures and validators must not be presented as runtime execution or registration proof.
 
+For human navigation, `scripts/vision_links.py` turns identifiers returned by that evidence into Talus Vision explorer links that always name their network. A Vision page is an indexed projection, not evidence; see [the Vision link reference](scripts/README.md#talus-vision-navigation-links).
+
 ## Validation
 
 Run the bundle validator before proposing changes:

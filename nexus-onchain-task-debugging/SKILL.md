@@ -5,7 +5,7 @@ description: Diagnose pending, failed, or inconsistent Nexus Executions by exhau
 
 # Nexus on-chain Task debugging
 
-Before using helper commands or fixtures, read [skill-only installation and companion setup](references/consumer-setup.md); the skill installer does not supply the repository-level companion tools. For live walks or CLI evidence, read [v2.0.0 walks and evidence limitations](references/cli-v2-walk.md): publish then schedule with both funding flags, inspect known Tool FQNs directly, and capture Testnet history before it is pruned.
+Before using helper commands or fixtures, read [skill-only installation and companion setup](references/consumer-setup.md); the skill installer does not supply the repository-level companion tools.
 
 Use this skill to trace a Task through its Occurrences and Executions, historical DAG/configuration, supplied effective inputs, Tool/Invocation results, authorization, timeouts, and payment records. For every Execution, inspect every required on-chain surface and return an exhaustive evidence ledger rather than an improvised retry or behavioral guess.
 

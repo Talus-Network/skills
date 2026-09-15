@@ -7,7 +7,7 @@ metadata:
 
 # Nexus CLI payment tracking
 
-Before using helper commands or fixtures, read [skill-only installation and companion setup](references/consumer-setup.md); the skill installer does not supply the repository-level companion tools. For live walks or CLI evidence, read [v2.0.0 walks and evidence limitations](references/cli-v2-walk.md): publish then schedule with both funding flags, inspect known Tool FQNs directly, and capture Testnet history before it is pruned.
+Before using helper commands or fixtures, read [skill-only installation and companion setup](references/consumer-setup.md); the skill installer does not supply the repository-level companion tools.
 
 Use this skill when the user needs to explain where value is held, what a Task or Execution may charge, whether a Tool Invocation settled or was refunded, why payment is short, or what a Tool/Leader can collect. Reconstruct the exact Task, Occurrence, Execution, `ExecutionPayment`, `Invocation`, Agent vault, ToolCashier, and priority-vault relationships. This skill diagnoses recorded state; it does not authorize payment or invent missing queries.
 

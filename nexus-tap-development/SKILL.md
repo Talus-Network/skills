@@ -5,7 +5,7 @@ description: "Build and verify Talus Agent Packages and their applications: Move
 
 # Nexus TAP development
 
-Before using helper commands or fixtures, read [skill-only installation and companion setup](references/consumer-setup.md); the skill installer does not supply the repository-level companion tools. For live walks or CLI evidence, read [v2.0.0 walks and evidence limitations](references/cli-v2-walk.md): publish then schedule with both funding flags, inspect known Tool FQNs directly, and capture Testnet history before it is pruned.
+Before using helper commands or fixtures, read [skill-only installation and companion setup](references/consumer-setup.md); the skill installer does not supply the repository-level companion tools.
 
 Use this skill for a DAG-backed TAP package, its Move package and skill artifact, or an application that reads an existing TAP through Nexus API REST/SSE. Keep structural/local tests, read-only API evidence, beta published-bytecode tests, and shared-network asset movement as separate evidence categories.
 

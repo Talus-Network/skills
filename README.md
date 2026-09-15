@@ -14,7 +14,7 @@ Choose your coding assistant and the skills needed for your project in the insta
 
 ## Skills
 
-Before following any helper or fixture command from an installed skill, use its `references/consumer-setup.md` to fetch the pinned public companion checkout and set `SKILLS_BUNDLE_ROOT`. The installer does not set that variable or supply the repository-level scripts. Repository-maintainer commands below run from a full checkout. Each skill also includes `references/cli-v2-walk.md` for v2.0.0 publish/schedule commands, mandatory funding flags, direct exact-FQN inspection, and immediate evidence capture before Testnet history is pruned.
+Before following any helper or fixture command from an installed skill, use its `references/consumer-setup.md` to fetch the pinned public companion checkout and set `SKILLS_BUNDLE_ROOT`. The installer does not set that variable or supply the repository-level scripts. Repository-maintainer commands below run from a full checkout. Live v2.0.0 execution is covered in the TAP workflow; Tool verification, payment reconciliation, and Task diagnosis include their own exact-FQN and Testnet evidence guidance.
 
 | Skill                                                               | Use it for                                                                                 |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |

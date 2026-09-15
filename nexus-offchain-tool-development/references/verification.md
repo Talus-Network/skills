@@ -143,11 +143,17 @@ nexus tool inspect --tool-fqn <FQN> --json
 
 Registration returns a Tool plus separate `CloneableOwnerCap<OverTool>` and `CloneableOwnerCap<OverToolCashier>` capabilities. Preserve the transaction digest, Tool ID, FQN, endpoint, capability custody, collateral state, and any ToolCashier policy evidence. `nexus tool claim-collateral` is a delayed collateral recovery path after unregister/lock conditions; it is not invocation-earnings collection or SUI gas recovery.
 
+Use the exact versioned FQN from metadata, a deployment receipt, or the DAG/skill artifact. Check the returned identity, network, endpoint, and registration state, not just exit status. Do not use `nexus tool list` for discovery or registration proof: a successful inventory can be empty or contain unavailable details. Failed or incomplete inspection is unavailable evidence, not absent registration. Obtain missing deployment records rather than inventing an FQN or registering a duplicate.
+
 ## 5. Prove a signed-result path safely
 
 When a Tool is registered with the appropriate active key and the Tool owner separately enables RegisteredKey verifier support, configure the DAG's off-chain vertex with `"verifier": "registered_key"` and run `nexus dag validate --path <dag.json>`. This parser check does not prove the Tool key, Leader key, or endpoint works.
 
 In a local required-mode test, an unsigned `/invoke` must fail before input decoding, normally with `401` and an `auth_failed` JSON error. Exercise tampered/missing/wrong signatures with the current SDK v3 tests or a local fixture, never against production traffic. For an accepted staging workflow, retain Tool/key/Task/Occurrence/Execution readbacks, FQN/Tool ID, active key IDs, input hash, nonce context, canonical result evidence, transaction digest, and verifier decision. Local Leader logs are not an on-chain verdict.
+
+Live workflow proof is conditional on an explicitly requested and authorized run, not a prerequisite for implementing or locally validating the Tool. Follow the published [execution guide](https://docs.talus.network/guides/agent-usage/execute-and-settle-agent) and selected binary's help. Released v2.0.0 uses DAG publication then Task scheduling, not `dag execute`, and requires both `--prepay-amount-mist` and `--occurrence-budget-mist`. Keep approved Task funding separate from signer-owned SUI transaction gas. Save actual Task/Occurrence/Execution links; never assume Occurrence zero or infer completion/settlement from scheduling.
+
+Capture the staging evidence above immediately, including raw output/errors and exit status, result/payment effects/events, CLI version/revision, network/endpoint, and collection time. Testnet may prune execution history after only a few days, with no guaranteed retention interval. `history is incomplete: missing transaction …` means unavailable historical evidence, not Tool failure or nonpayment. Continue independent durable reads and retain timestamped saved evidence without presenting it as a fresh historical verification. A separately authorized rerun produces new evidence; it does not recover the old execution.
 
 ## 6. Version and diagnose
 

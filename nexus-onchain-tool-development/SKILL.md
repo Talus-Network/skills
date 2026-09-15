@@ -5,7 +5,7 @@ description: Build and test Nexus Sui Move on-chain Tools with public execute AB
 
 # Nexus on-chain Tool development
 
-Before using helper commands or fixtures, read [skill-only installation and companion setup](references/consumer-setup.md); the skill installer does not supply the repository-level companion tools. For live walks or CLI evidence, read [v2.0.0 walks and evidence limitations](references/cli-v2-walk.md): publish then schedule with both funding flags, inspect known Tool FQNs directly, and capture Testnet history before it is pruned.
+Before using helper commands or fixtures, read [skill-only installation and companion setup](references/consumer-setup.md); the skill installer does not supply the repository-level companion tools.
 
 Use this skill for a Sui Move Tool `execute` entry point, witness/result schema, ABI, output tags, and consumer package. It covers pure application logic, public interface dependencies, local compilation/tests, artifact validation, and safe deployment preparation. A successful local or structural check is not registration or live execution proof.
 

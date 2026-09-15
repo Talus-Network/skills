@@ -1,5 +1,7 @@
 # Public source and evidence preparation
 
+Before running this reference's commands, complete [companion setup](consumer-setup.md). Here, the bundle root means that explicit public companion checkout, not the directory produced by a skill-only installation.
+
 Use this reference when a payment investigation needs version-sensitive CLI fields or Move object definitions. It is a read-only evidence step after the payment route has been selected. The canonical bundle contract is maintained in the commands and guidance below.
 
 Set `SKILLS_BUNDLE_ROOT` to the installed bundle root and use `scripts/prepare_sources.py` from that root. Prepare only `nexus-sdk`, `nexus-move-packages`, and `sui`; resolve `SDK_ROOT`, `MOVE_PACKAGES_ROOT`, and `SUI_ROOT` from the returned manifest with the helper's `root --manifest ... --repo ...` command. Keep every path under the repository-relative verified roots. Never search the host checkout or copy private source paths into a report.

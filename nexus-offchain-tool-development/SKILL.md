@@ -5,6 +5,8 @@ description: Build, test, and verify standalone Rust HTTP Tools for Nexus extern
 
 # Nexus off-chain Tool development
 
+Before using helper commands or fixtures, read [skill-only installation and companion setup](references/consumer-setup.md); the skill installer does not supply the repository-level companion tools.
+
 Use this skill for the Rust HTTP service that Nexus Leader invokes during a workflow. It covers Tool contract and schema/FQN design, external dependency seams, deterministic tests, Toolkit metadata, signed HTTP, and safe registration preparation. On-chain state or asset mutation belongs in [on-chain Tool development](https://docs.talus.network/guides/tool-development/build-onchain-tool); an existing TAP UI/API belongs in [API application development](https://docs.talus.network/guides/nexus-api).
 
 ## Task contract before setup

@@ -14,6 +14,20 @@ Use the selected binary's `--help` output as the command contract. The public SD
 | Sui framework packages for local Move interpretation | [Pinned Sui framework source](https://github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages) |
 | Deployed package/module/object observations | `scripts/testnet_evidence.py` with `https://graphql.testnet.sui.io/graphql` |
 
+## Exact readbacks
+
+Use actual Task and Occurrence IDs, discovering the Occurrence rather than assuming zero:
+
+```bash
+nexus task inspect --task-id "$TASK_ID"
+nexus task occurrence list --task-id "$TASK_ID" --json
+nexus task occurrence inspect --task-id "$TASK_ID" --occurrence-id "$OCCURRENCE_ID"
+nexus execution inspect --task-id "$TASK_ID" --occurrence-id "$OCCURRENCE_ID"
+nexus tool inspect --tool-fqn "$TOOL_FQN" --json
+```
+
+Resolve the exact versioned FQN from the DAG, skill artifact, or deployment receipt. Do not use `nexus tool list` for discovery or registration proof: exit 0 can accompany an empty inventory or unavailable details. Verify the returned Tool identity, network, and registration before tracing its cashier; a missing read is unavailable evidence, not zero revenue or absent registration. Obtain missing deployment records rather than guessing FQNs. Apply the [ledger's funding and retention limits](payment-ledger.md#v2-funding-and-evidence-retention) before drawing conclusions.
+
 ## Command classes
 
 Read-only inspection includes version/help, gas balance, object inspection, Task/Occurrence/Execution/payment reads, and the explicit testnet evidence helper. Local build/test changes only disposable files. Deposits, refills, collection, settlement, scheduling, policy updates, and transaction submission are shared-network mutations and require a separate authorization gate.

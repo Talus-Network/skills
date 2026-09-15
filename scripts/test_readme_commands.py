@@ -135,10 +135,7 @@ class SkillsReadmeCommandTests(unittest.TestCase):
         self.assertNotIn("github.com", website_source)
 
     def test_public_bootstrap_extracts_and_preflights_against_helper(self) -> None:
-        text = README_PATH.read_text(encoding="utf-8")
-        block_match = re.search(r"## Portable source evidence\n\n.*?```bash\n(.*?)\n```", text, re.DOTALL)
-        self.assertIsNotNone(block_match)
-        block = block_match.group(1)
+        block = _extract_bootstrap_block(SOURCE_REFERENCE_PATHS[0])
         syntax = subprocess.run(["bash", "-n"], input=block, capture_output=True, text=True, check=False)
         self.assertEqual(syntax.returncode, 0, syntax.stderr)
         self.assertIn('SKILLS_BUNDLE_ROOT="${SKILLS_BUNDLE_ROOT:?', block)
@@ -224,7 +221,6 @@ class SkillsReadmeCommandTests(unittest.TestCase):
 
     def test_cleanup_failure_is_reported_without_masking_main_status(self) -> None:
         skill_paths = (
-            ROOT / "README.md",
             ROOT / "scripts/README.md",
             *SOURCE_REFERENCE_PATHS,
         )
@@ -286,7 +282,6 @@ class SkillsReadmeCommandTests(unittest.TestCase):
 
     def test_prepare_and_each_root_failure_stop_before_dependent_commands(self) -> None:
         bootstrap_paths = (
-            ROOT / "README.md",
             ROOT / "scripts/README.md",
             *SOURCE_REFERENCE_PATHS,
         )

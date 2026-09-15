@@ -8,7 +8,7 @@ Read this reference after implementation checks pass or when the request involve
 | --- | --- |
 | `cargo check/test/clippy/fmt`, `cargo run -- --meta`, local mock server | Local build or inspection; safe in an isolated project. |
 | `nexus tool validate offchain --url ...` | Read/health request to the supplied endpoint; use loopback or explicitly authorized staging. |
-| `nexus tool inspect`, `nexus tool list`, `nexus tool auth list-keys` | Read-only network inspection; verify configuration and network provenance first. |
+| `nexus tool inspect --tool-fqn <FQN>`, `nexus tool auth list-keys` | Read-only network inspection; verify configuration and network provenance first. |
 | `nexus tool register offchain`, `tool auth register-key`, `tool configure-verifier`, deposits, claims, unregister, updates, or cashier collection | Shared-network mutation; stop for explicit authorization and run the mutation preflight immediately before it. |
 
 Never use a localhost URL as a production registration target. A request to build, validate, or debug does not authorize registration, key publication, collateral lock, or payment movement.
@@ -139,7 +139,6 @@ Read back the result by FQN after an authorized transaction:
 
 ```bash
 nexus tool inspect --tool-fqn <FQN> --json
-nexus tool list
 ```
 
 Registration returns a Tool plus separate `CloneableOwnerCap<OverTool>` and `CloneableOwnerCap<OverToolCashier>` capabilities. Preserve the transaction digest, Tool ID, FQN, endpoint, capability custody, collateral state, and any ToolCashier policy evidence. `nexus tool claim-collateral` is a delayed collateral recovery path after unregister/lock conditions; it is not invocation-earnings collection or SUI gas recovery.

@@ -1,10 +1,10 @@
 # Talus Nexus Agent Skills
 
-Reusable engineering skills for building and diagnosing Talus Nexus applications. The bundle is self-contained: stable examples and test fixtures live here, while version-sensitive source is limited to anonymous public repositories and read-only Sui testnet evidence.
+Reusable engineering skills for building and diagnosing Talus Nexus applications. Stable examples, companion scripts, and test fixtures live in this repository, while version-sensitive source is limited to anonymous public repositories and read-only Sui testnet evidence. A skill-only installation does not include the repository-level companion scripts.
 
 ## Install from the public repository
 
-Install the complete Skills bundle or select individual skills with the public `skills` CLI:
+Install all five skill directories or select individual skills with the public `skills` CLI:
 
 ```bash
 npx skills add Talus-Network/skills
@@ -13,6 +13,8 @@ npx skills add Talus-Network/skills
 Choose your coding assistant and the skills needed for your project in the installer. Once installed, ask your assistant to use the relevant skill by name.
 
 ## Skills
+
+Before following any helper or fixture command from an installed skill, use its `references/consumer-setup.md` to fetch the pinned public companion checkout and set `SKILLS_BUNDLE_ROOT`. The installer does not set that variable or supply the repository-level scripts. Repository-maintainer commands below run from a full checkout. Each skill also includes `references/cli-v2-walk.md` for v2.0.0 publish/schedule commands, mandatory funding flags, direct exact-FQN inspection, and immediate evidence capture before Testnet history is pruned.
 
 | Skill                                                               | Use it for                                                                                 |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |

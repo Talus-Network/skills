@@ -33,6 +33,12 @@ Record exact object IDs, owners, types, versions, transaction/checkpoint provena
 | Refund recipient and beneficiary identity | Which exact object/address receives the refund or Tool entitlement? | Payment source, Tool price, or an inferred owner |
 | Collection authority and deposit | Which exact capability, policy, beneficiary, and deposit establish collectability? | An unperformed collection action or a zero balance |
 
+## v2 funding and evidence retention
+
+Released v2.0.0 starts walks through DAG publication and Task scheduling, not `dag execute`. Scheduling requires both `--prepay-amount-mist` (Task reserve funding) and `--occurrence-budget-mist` (occurrence budget), including immediate one-off walks. Neither value proves an actual Invocation charge or settlement. Reconcile them against the linked reserve and Execution payment records; transaction gas is separate, and SUI address balance alone does not prove usable signer-owned gas coins. Payment investigation does not authorize publishing, scheduling, refilling, or collecting funds.
+
+Save raw readbacks/errors and exit status, collection time, CLI version/revision, network/endpoint, exact IDs, and transaction effects/events and payment receipts immediately. Testnet may prune execution history after only a few days, without a guaranteed retention interval. `history is incomplete: missing transaction …` makes the historical trace unavailable; it is not zero payment, failed execution, or proof that no settlement occurred. Continue independent durable reads and mark dependent ledger rows unavailable. Saved evidence remains timestamped historical evidence, not a fresh read. A separately authorized rerun creates a different payment trace and cannot recover the old one.
+
 ## Collectability boundary
 
 Treat a Tool amount as `unavailable` until the exact Invocation, policy/beneficiary, deposit, and settlement records establish that it is collectible. Missing collection authority or an unperformed collection action does not establish a zero entitlement. Compute a collectible amount only after verifying field semantics, payment scope, and non-overlap; do not subtract or add balances whose relationship is only inferred.

@@ -555,6 +555,7 @@ def _validate_public_urls(
     *,
     url_resolver: Callable[[str], str | None] | None = None,
     allow_published_documentation: bool = False,
+    allow_companion: bool = False,
 ) -> None:
     candidates = [*URL_RE.findall(content), *SCP_URL_RE.findall(content)]
     seen: set[str] = set()
@@ -569,6 +570,8 @@ def _validate_public_urls(
             clean_url,
             allow_published_documentation=allow_published_documentation,
         )
+        if allow_companion and clean_url == "https://" + "github.com/" + PUBLIC_INSTALL_GITHUB_REPOSITORY:
+            allowed = True
         if not allowed:
             errors.append(f"{_path_label(path)}: URL is not in the public allowlist ({reason}): {clean_url}")
             continue
@@ -585,6 +588,8 @@ def _validate_public_urls(
             final_url,
             allow_published_documentation=allow_published_documentation,
         )
+        if allow_companion and final_url == "https://" + "github.com/" + PUBLIC_INSTALL_GITHUB_REPOSITORY:
+            final_allowed = True
         if not final_allowed:
             errors.append(
                 f"{_path_label(path)}: URL redirects outside the public allowlist ({final_reason}): {clean_url} -> {final_url}"
@@ -599,6 +604,14 @@ def _is_documentation_context(root: Path, path: Path) -> bool:
     except ValueError:
         return False
     return path.name in {"README.md", "docs_website.py"} or path.name == "SKILL.md" or "references" in relative.parts or "evals" in relative.parts
+
+
+def _companion_bootstrap_spans(root: Path, path: Path, content: str) -> tuple[tuple[int, int], ...]:
+    """Permit the exact anonymous companion fetch only in each skill's setup reference."""
+    if path not in {root / name / "references" / "consumer-setup.md" for name in EXPECTED_SKILLS}:
+        return ()
+    command = 'git -C "$SKILLS_BUNDLE_ROOT" remote add origin ' + 'https://' + 'github.com/' + PUBLIC_INSTALL_GITHUB_REPOSITORY + ' &&'
+    return tuple(match.span() for match in re.finditer(r"(?m)^" + re.escape(command) + r"$", content))
 
 
 def _validate_public_repository_references(
@@ -618,6 +631,7 @@ def _validate_public_repository_references(
         for match in PUBLIC_INSTALL_COMMAND_RE.finditer(content)
         if _span_is_contained(match.span(), install_context_spans)
     )
+    canonical_install_spans += _companion_bootstrap_spans(root, path, content)
     for reference in PUBLIC_REPOSITORY_REFERENCE_RE.finditer(content):
         normalized = re.sub(r"\s+", "", reference.group(0))
         if normalized in PUBLIC_GITHUB_REPOSITORIES:
@@ -662,6 +676,7 @@ def _validate_public_install_references(
         for match in PUBLIC_INSTALL_COMMAND_RE.finditer(content)
         if _span_is_contained(match.span(), install_context_spans)
     )
+    canonical_command_spans += _companion_bootstrap_spans(root, path, content)
     for match in variants:
         if _span_is_contained(match.span(), canonical_command_spans):
             continue
@@ -699,6 +714,7 @@ def validate_portability(
             errors,
             url_resolver=url_resolver,
             allow_published_documentation=_is_documentation_context(root, path),
+            allow_companion=bool(_companion_bootstrap_spans(root, path, content)),
         )
         _validate_public_repository_references(root, path, content, errors, install_context_spans)
         _validate_public_install_references(root, path, content, errors, install_context_spans)

@@ -99,6 +99,25 @@ Prefer existing `nexus` read-only inspection commands and the bundled `testnet_e
 10. Reconcile the ordered events/effects with all object versions and lifecycle counters, re-read any object whose version or ownership changed, and record transaction/checkpoint and response-digest provenance.
 11. Complete every cause-ledger row supported by these surfaces. Continue independent reads after a conflict or unavailable field; mark only dependent causes unresolved when their evidence chain cannot be completed.
 
+### v2 read commands and missing history
+
+After checking the selected binary's provenance, version, help, and network, use the IDs resolved above. Discover the Occurrence rather than assuming zero:
+
+```bash
+nexus task inspect --task-id "$TASK_ID"
+nexus task occurrence list --task-id "$TASK_ID" --json
+nexus task occurrence inspect --task-id "$TASK_ID" --occurrence-id "$OCCURRENCE_ID"
+nexus dag inspect --dag-id "$DAG_ID"
+nexus execution inspect --task-id "$TASK_ID" --occurrence-id "$OCCURRENCE_ID"
+nexus tool inspect --tool-fqn "$TOOL_FQN" --json
+```
+
+Resolve the exact versioned Tool FQN from the historical DAG, skill artifact, or deployment receipt. Do not use `nexus tool list` for discovery or registration verification: exit 0 can accompany an empty inventory or unavailable details. Check the inspected identity, network, and registration fields; failed or incomplete reads are unavailable evidence, not absent registration. Request missing artifacts rather than guessing an FQN or registering a duplicate.
+
+Capture raw output/errors and exit status, collection time, CLI version/revision, network/endpoint, exact IDs, transaction effects/events, and result/payment evidence immediately. Testnet may prune execution history after only a few days, with no guaranteed retention interval. `history is incomplete: missing transaction …` prevents historical reconstruction; it does not establish a failed Execution or any root cause. Preserve timestamped saved evidence as historical, continue independent durable reads, and leave dependent cause rows unresolved. Current state cannot replace missing historical state.
+
+In v2.0.0, walks originate from DAG publication and Task scheduling, not `dag execute`. Scheduling requires `--prepay-amount-mist` and `--occurrence-budget-mist`; inspect the resulting reserve, budget, and separate native gas evidence rather than inferring funding from command success. Do not publish, schedule, refill, or rerun to complete this worksheet. A separately authorized new run is new evidence, not recovery of the old trace.
+
 ## Correctness invariants
 
 - Agent, Skill, Leader capability, Tool, Task, and Execution network/package/interface identities must agree with exact on-chain bindings.

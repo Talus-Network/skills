@@ -1,5 +1,7 @@
 # Public source and evidence preparation
 
+Before running this reference's commands, complete [companion setup](consumer-setup.md). Here, the bundle root means that explicit public companion checkout, not the directory produced by a skill-only installation.
+
 Use this reference after the embedded contract/design gate and the off-chain HTTP Tool route. The pinned three-archive workflow, manifest schema, and cleanup implementation are documented in the commands and guidance below.
 
 Set `SKILLS_BUNDLE_ROOT` to the installed bundle root. Prepare only `nexus-sdk`, `nexus-move-packages`, and `sui` with `scripts/prepare_sources.py`, then resolve `SDK_ROOT`, `MOVE_PACKAGES_ROOT`, and `SUI_ROOT` from the manifest through `root --manifest ... --repo ...`. Use only repository-relative paths under those verified roots; never require another checkout.

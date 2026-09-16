@@ -60,6 +60,50 @@ Run `sui move build`; run `sui move test` only for a Nexus-free test package or 
 
 Use `scripts/testnet_evidence.py --graphql-url https://graphql.testnet.sui.io/graphql` with optional package/module/object arguments for public deployed observations. Retain the endpoint, network label, methods, response digests, and timestamp. An observation does not prove execution, binding, or settlement.
 
+## Authorized live walk on v2.0.0
+
+Use this path only when the requested work includes live DAG execution; API-only development and local VM tests do not need it. `nexus dag execute` is gone in v2.0.0: publish a DAG, then schedule a Task. Check `nexus --version`, binary provenance, `nexus dag publish --help`, and `nexus task schedule --help` against the published [Developer Setup](https://docs.talus.network/guides/getting-started/setup). A local build reporting `2.0.0` may expose later commands. The released CLI does not include `tap test` or `--authorization-binding`; protected Agent-skill bindings need the supported SDK/Move path, not guessed release flags.
+
+Before signing, apply the mutation gate below. Verify the target network, signer, configured executor, exact DAG entry group/inputs, and approved funding amounts. SUI address balance is not proof of usable signer-owned gas coins; Task reserve funding and transaction gas are separate. Set `PREPAY_MIST` to the approved reserve and `OCCURRENCE_BUDGET_MIST` to the approved occurrence budget, both integer MIST; the reserve must cover the intended budget. Both flags are mandatory even for an immediate one-off walk. Do not invent amounts or change executors to bypass a preflight failure.
+
+Inspect each bound Tool using its exact versioned FQN from the DAG or deployment receipt:
+
+```bash
+nexus tool inspect --tool-fqn "$TOOL_FQN" --json
+```
+
+Check returned identity, network, and registration, not just exit status. Do not use `nexus tool list` for discovery or registration proof: a successful result can be empty or contain unavailable details. Recover unknown FQNs from artifacts or request deployment records; unavailable inspection does not authorize duplicate registration.
+
+For a new DAG, validate and publish; for an already published DAG, use its verified ID without republishing:
+
+```bash
+nexus dag validate --path "$DAG_PATH"
+nexus dag publish --path "$DAG_PATH"
+```
+
+Save the actual returned DAG ID as `DAG_ID`. Inspect its entry groups and required inputs before setting `ENTRY_GROUP` and `INPUT_JSON`, then schedule within the authorized spending scope:
+
+```bash
+nexus dag inspect --dag-id "$DAG_ID"
+nexus task schedule --dag-id "$DAG_ID" \
+  --entry-group "$ENTRY_GROUP" --input-json "$INPUT_JSON" \
+  --prepay-amount-mist "$PREPAY_MIST" \
+  --occurrence-budget-mist "$OCCURRENCE_BUDGET_MIST" --now
+```
+
+Save the returned Task ID and transaction digest. Discover the actual Occurrence ID; never assume it is zero. These readbacks do not submit another walk:
+
+```bash
+nexus task inspect --task-id "$TASK_ID"
+nexus task occurrence list --task-id "$TASK_ID" --json
+nexus task occurrence inspect --task-id "$TASK_ID" --occurrence-id "$OCCURRENCE_ID"
+nexus execution inspect --task-id "$TASK_ID" --occurrence-id "$OCCURRENCE_ID"
+```
+
+Publication or scheduling success is not Execution completion or settlement. Follow the exact Task → Occurrence → Execution links and result/payment effects; pending state is not a reason to schedule again.
+
+Capture raw readbacks, errors and exit status, transaction effects/events, result/payment evidence, IDs, CLI version/revision, network/endpoint, and collection time immediately. Testnet execution history may be pruned after only a few days; there is no guaranteed retention interval. `history is incomplete: missing transaction …` means the historical trace is unavailable, not that the walk failed. Keep independent durable reads and timestamped saved evidence, without presenting them as fresh historical verification. A newly authorized run produces new evidence; it cannot recover the old execution.
+
 ## Mutation gate
 
 Publishing a package, registering a Tool, binding a skill, scheduling a Task, upgrading a package, depositing funds, or submitting any transaction is a shared-network mutation. Stop before it unless the user authorizes the exact operation and the preflight proves network identity, package lineage, object IDs, ownership/capability, recipient, amount, gas, and expected post-state reads.

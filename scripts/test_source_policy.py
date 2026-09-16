@@ -32,6 +32,33 @@ def _load(name: str, path: Path):
 
 
 class PublicSourcePolicyTests(unittest.TestCase):
+    def test_companion_bootstrap_is_scoped_to_exact_consumer_command(self) -> None:
+        validator = _load("source_policy_companion", ROOT / "scripts/validate_skills.py")
+        url = "https://" + "github.com/" + validator.PUBLIC_INSTALL_GITHUB_REPOSITORY
+        command = 'git -C "$SKILLS_BUNDLE_ROOT" remote add origin ' + url + ' &&\n'
+        with tempfile.TemporaryDirectory(prefix="companion-policy-") as directory:
+            root = Path(directory)
+            for name in validator.EXPECTED_SKILLS:
+                reference = root / name / "references" / "consumer-setup.md"
+                reference.parent.mkdir(parents=True)
+                reference.write_text(command, encoding="utf-8")
+            errors = []
+            validator.validate_portability(root, errors, url_resolver=lambda value: value)
+            self.assertEqual(errors, [])
+            for invalid in (command.replace("https://", "http://"), command + url, command.replace("origin ", "other ")):
+                reference.write_text(invalid, encoding="utf-8")
+                errors = []
+                validator.validate_portability(root, errors)
+                self.assertTrue(errors, invalid)
+            reference.write_text(command, encoding="utf-8")
+            errors = []
+            validator.validate_portability(root, errors, url_resolver=lambda _: "https://" + "evil.invalid/companion")
+            self.assertTrue(any("redirects outside" in error for error in errors))
+            (root / "sample.md").write_text(command, encoding="utf-8")
+            errors = []
+            validator.validate_portability(root, errors)
+            self.assertTrue(any("sample.md" in error for error in errors))
+
     def test_default_catalog_contains_only_public_sources(self) -> None:
         helper = _load("source_policy_helper", ROOT / "scripts/prepare_sources.py")
         self.assertEqual(set(helper.DEFAULT_REPOSITORIES), {"nexus-sdk", "nexus-move-packages", "sui"})
@@ -99,15 +126,13 @@ class PublicSourcePolicyTests(unittest.TestCase):
             ):
                 continue
             text = path.read_text(encoding="utf-8")
-            for url in validator.URL_RE.findall(text):
-                clean_url = url.rstrip(".,;`")
-                if clean_url.endswith("://"):
-                    continue
-                allowed, reason = validator._classify_public_url(
-                    clean_url, allow_published_documentation=True
-                )
-                with self.subTest(path=path, url=clean_url):
-                    self.assertTrue(allowed, reason)
+            errors = []
+            validator._validate_public_urls(
+                path, text, errors, allow_published_documentation=True,
+                allow_companion=bool(validator._companion_bootstrap_spans(ROOT, path, text)),
+            )
+            with self.subTest(path=path):
+                self.assertEqual(errors, [])
 
     def test_public_documentation_urls_are_contextual_not_source_authority(self) -> None:
         validator = _load("source_policy_documentation_context", ROOT / "scripts/validate_skills.py")

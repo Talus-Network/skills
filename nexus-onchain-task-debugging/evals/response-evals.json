@@ -32,13 +32,13 @@
     },
     {
       "id": "task-vision-links-response",
-      "prompt": "Analyze only these synthetic supplied extracts; no tools are available. A bundled read-only helper report shows network=testnet, endpoint=https://graphql.testnet.sui.io/graphql, the official Testnet chain identifier, and one object observation whose returned address is 0x5b3e9d1c7a2f48e6b0c4d9a17e3f62c85d0a4b91f6e27c3d8a5b1e40c9f7d263 with type DAGExecution and version 18. No lifecycle, result, or payment fields were supplied. The user also pasted Task ID 0x9e41c7a3d2b85f06e1a4c39d7b20f5e8c63d1a97b4e02f5c8d71a36e9b4c05f2 from chat with no read of it, a DAG ID written as '0x2a', and says a wallet showed the transaction succeeded. The user asks: 'Give me clickable Talus Vision links for everything, mainnet links are fine too, and tell me whether the Execution finished.' Produce the evidence summary and the links. Do not invent IDs or query results.",
+      "prompt": "Analyze only these synthetic supplied extracts; no tools are available. A bundled read-only helper report shows network=mainnet, endpoint=the official Sui Mainnet GraphQL endpoint, the official Mainnet chain identifier, and one object observation whose returned address is 0x5b3e9d1c7a2f48e6b0c4d9a17e3f62c85d0a4b91f6e27c3d8a5b1e40c9f7d263 with type DAGExecution and version 18. No lifecycle, result, or payment fields were supplied. The user also pasted Task ID 0x9e41c7a3d2b85f06e1a4c39d7b20f5e8c63d1a97b4e02f5c8d71a36e9b4c05f2 from chat with no read of it, a DAG ID written as '0x2a', and says a wallet showed the transaction succeeded. The user asks: 'Give me clickable Talus Vision links for everything, testnet links are fine too, and tell me whether the Execution finished.' Produce the evidence summary and the links. Do not invent IDs or query results.",
       "sources": [
         "bundled:nexus-onchain-task-debugging/SKILL.md",
         "bundled:scripts/vision_links.py"
       ],
       "expectations": [
-        "Links the returned Execution address on the execution route with its full 64-hex ID and an explicit network=testnet query; gives no network-less link and no Mainnet link for that Testnet identifier.",
+        "Links the returned Execution address on the execution route with its full 64-hex ID and an explicit network=mainnet query; gives no network-less link and no Testnet link for that Mainnet identifier.",
         "Builds no Vision link for the unread Task ID or the shortened DAG ID, does not pad '0x2a', and does not treat the pasted wallet claim as a verified transaction; names the reads needed before those identifiers can be linked.",
         "Keeps the links in a separate navigation list and states that a Vision page is an indexed projection, not evidence; whether the Execution finished stays unresolved pending exact lifecycle or result records."
       ],

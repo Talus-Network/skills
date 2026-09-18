@@ -252,6 +252,49 @@ class PublicSourcePolicyTests(unittest.TestCase):
         unapproved_url = "https://" + "github.com/" + unapproved_repository + "/blob/main/reference/cli/tap.md"
         self.assertFalse(validator._classify_public_url(unapproved_url, allow_published_documentation=True)[0])
 
+    def test_talus_vision_links_are_network_explicit_documentation_navigation(self) -> None:
+        validator = _load("source_policy_vision_links", ROOT / "scripts/validate_skills.py")
+        base = "https://" + "vision.talus.network"
+        execution = "0x" + "ab" * 32
+        approved = (
+            base + "/execution/" + execution + "?network=testnet",
+            base + "/payment/" + execution + "?network=mainnet",
+            base + "/tool/xyz.taluslabs.math.add%401?network=testnet",
+            base + "/skill/" + execution + "/0?network=testnet",
+        )
+        for url in approved:
+            with self.subTest(url=url):
+                self.assertFalse(validator._classify_public_url(url)[0])
+                self.assertTrue(validator._classify_public_url(url, allow_published_documentation=True)[0])
+        rejected = (
+            base + "/execution/" + execution,
+            base + "/execution/" + execution + "?network=devnet",
+            base + "/execution/" + execution + "?network=testnet&ref=1",
+            base + "/execution/" + execution + "?network=testnet#top",
+            base + "/execution/0x2a?network=testnet",
+            base + "/dag/" + execution + "?network=testnet",
+            base + ":443/execution/" + execution + "?network=testnet",
+            "http://" + "vision.talus.network/execution/" + execution + "?network=testnet",
+        )
+        for url in rejected:
+            with self.subTest(url=url):
+                self.assertFalse(validator._classify_public_url(url, allow_published_documentation=True)[0])
+
+        for relative, content, expect_errors in (
+            ("references/page.md", approved[0], False),
+            ("references/page.md", rejected[0], True),
+            ("scripts/prepare_sources.py", approved[0], True),
+        ):
+            with tempfile.TemporaryDirectory(prefix="source-policy-vision-") as directory:
+                root = Path(directory)
+                path = root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text(content, encoding="utf-8")
+                errors: list[str] = []
+                validator.validate_portability(root, errors)
+                with self.subTest(relative=relative, content=content):
+                    self.assertEqual(bool(errors), expect_errors, errors)
+
     def test_semantic_documentation_authorities_fail_closed(self) -> None:
         validator = _load("source_policy_validator", ROOT / "scripts/validate_skills.py")
         variants = (

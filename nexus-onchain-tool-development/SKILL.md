@@ -28,7 +28,7 @@ For version-sensitive setup, use the published [Developer Setup](https://docs.ta
 
 ## Public source and Testnet evidence
 
-For ABI, admission, witness/result, output, or published-bytecode work, read [the workflow](references/workflow.md) and [the scaffolding contract](references/scaffolding.md) as needed. Read [the source map](references/source-map.md) only for a dependency or source-location question. Read [the source-preparation contract](references/source-preparation.md) only when that question needs version-sensitive public source; then use `scripts/prepare_sources.py` from a fresh consumer workspace for only `nexus-sdk`, `nexus-move-packages`, and `sui`, preserving manifest cleanup. For local tests that call Nexus functions, use the additive beta CLI from [Prepare for On-Chain Development](https://docs.talus.network/guides/getting-started/prepare-onchain-development), set `NEXUS_BETA_CLI` to an explicit binary, and verify `"$NEXUS_BETA_CLI" tap test --help`. Do not prepend the beta directory to `PATH`; unqualified `nexus` remains the released CLI. The beta command comes from the public `nexus-sdk` `main` branch rather than a released Rust SDK dependency.
+For ABI, admission, witness/result, output, or published-bytecode work, read [the workflow](references/workflow.md) and [the scaffolding contract](references/scaffolding.md) as needed. Read [the source map](references/source-map.md) only for a dependency or source-location question. Read [the source-preparation contract](references/source-preparation.md) only when that question needs version-sensitive public source; then use `scripts/prepare_sources.py` from a fresh consumer workspace for only `nexus-sdk`, `nexus-move-packages`, and `sui`, preserving manifest cleanup.
 
 For deployed package, module, or object facts, use the bundle-root read-only `scripts/testnet_evidence.py` helper with `https://graphql.testnet.sui.io/graphql`. It performs read-only GraphQL queries and never opens a wallet, switches environment, signs, publishes, registers, or submits a transaction.
 
@@ -41,11 +41,15 @@ For deployed package, module, or object facts, use the bundle-root read-only `sc
 
 ## Local published-bytecode Tool tests
 
-Use pure `sui move test` tests for application decisions and the explicit `NEXUS_BETA_CLI` published-bytecode harness for tests calling published Nexus functions. Run one focused case only to identify the first concrete compiler, ABI/layout, witness/result, authorization, commitment, output, or finalization failure, then rerun the unfiltered `"$NEXUS_BETA_CLI" tap test --path <tool-package> --build-env testnet` gate. The beta directory is never exported on `PATH`. Keep structural checks, local VM evidence, and live execution evidence separate.
+Use pure `sui move test` tests for application decisions. Run one focused case only to identify the first concrete compiler, ABI/layout, witness/result, authorization, commitment, output, or finalization failure, then rerun the unfiltered `nexus tap test --path <tool-package> --build-env testnet` gate.
 
 ## Validation and deployment boundary
 
 Validate manifest closure, ABI/schema, witness identity, output tags, recipient/commitment checks, and tests before preparing registration. For the scaffold's nested `Bag` witness, registration requires a reviewed package-specific dynamic-field decoder and fixture proving the actual nested witness UID; an inner/state or wrapper ID alone is insufficient. If that decoder evidence is unavailable, report registration blocked rather than guessing an ID or getter. Publication and registration are shared-network mutations. Before an explicitly authorized operation, verify FQN, package/module, description, timeout, invocation cost, target network, witness ID, collateral/gas, signer/capability custody, and expected readbacks. Retain transaction and object evidence; a local build, validator output, or digest alone does not prove registration.
+
+## Capability and authorization boundary
+
+Keep the Tool owner capability, ToolCashier administration capability, Tool Registry administration capability used for verification, and result-verifier owner capability as separate records. A workflow authorization binding identifies the recipient object for a protected vertex; it does not establish capability custody or replace the required `ProvenValue<AgentVertexAuthorization>` check. For any authorized registration or verification mutation, retain the exact capability object ID, transaction effects, and post-state read.
 
 ## Talus Vision links
 

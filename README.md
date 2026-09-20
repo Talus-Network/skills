@@ -14,7 +14,7 @@ Choose your coding assistant and the skills needed for your project in the insta
 
 ## Skills
 
-Before following any helper or fixture command from an installed skill, use its `references/consumer-setup.md` to fetch the pinned public companion checkout and set `SKILLS_BUNDLE_ROOT`. The installer does not set that variable or supply the repository-level scripts. Repository-maintainer commands below run from a full checkout. Live v2.0.0 execution is covered in the TAP workflow; Tool verification, payment reconciliation, and Task diagnosis include their own exact-FQN and Testnet evidence guidance.
+Before following any helper or fixture command from an installed skill, use its `references/consumer-setup.md` to fetch the pinned public companion checkout and set `SKILLS_BUNDLE_ROOT`. The installer does not set that variable or supply the repository-level scripts. Repository-maintainer commands below run from a full checkout. Live execution is covered in the TAP workflow; Tool verification, payment reconciliation, and Task diagnosis include their own exact-FQN and Testnet evidence guidance.
 
 | Skill                                                               | Use it for                                                                                 |
 | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -56,10 +56,10 @@ Commit the generated `Move.lock` and keep the package revision, network, and pub
 
 ## Published Setup authority
 
-Version-sensitive instructions use the published [Developer Setup](https://docs.talus.network/guides/getting-started/setup), not a source-repository checkout. Check the page anonymously before relying on a release-specific command; the expected release for this bundle is `v2.0.0`.
+Version-sensitive instructions use the published [Developer Setup](https://docs.talus.network/guides/getting-started/setup), not a source-repository checkout. Check the page anonymously before relying on a release-specific command; the expected release for this bundle is `v2.1.0`.
 
 ```bash
-python3 scripts/docs_website.py --url https://docs.talus.network/guides/getting-started/setup --expected-version v2.0.0
+python3 scripts/docs_website.py --url https://docs.talus.network/guides/getting-started/setup --expected-version v2.1.0
 ```
 
 The check is read-only and fails closed on an unavailable page, an unsafe redirect, malformed content, or a version mismatch. It never installs a dependency or changes a Sui environment; show any resulting setup command to the user as a separate, explicitly authorized workflow.

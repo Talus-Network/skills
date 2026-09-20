@@ -2,7 +2,7 @@
 
 This workflow applies to package, DAG, and skill-artifact changes. For an application over an existing TAP, use [Nexus API application development](nexus-api-application.md); app-only work does not require package setup or fixture gates.
 
-Use the released `nexus` binary for scaffold, validation, publication, registration, binding, and scheduling. Set `NEXUS_BETA_CLI` to the explicit beta binary from Developer Setup and use it only for `tap test`; do not put its directory on `PATH`.
+Use the released `nexus` binary for scaffold, validation, publication, registration, binding, and scheduling. Use the released `nexus` binary for every CLI operation, including `tap test`; invoke the verified installation directly.
 
 ## Package and artifact layout
 
@@ -27,7 +27,7 @@ For offline source inspection and repository-owned fixture tests, prepare the th
 The public Move Packages archive includes a complete embedded TAP example at `examples/local_testing`. After resolving `MOVE_PACKAGES_ROOT` from the source manifest, use it as a fresh-agent creation/test reference:
 
 ```bash
-"$NEXUS_BETA_CLI" tap test --path "$MOVE_PACKAGES_ROOT/examples/local_testing" --build-env testnet
+nexus tap test --path "$MOVE_PACKAGES_ROOT/examples/local_testing" --build-env testnet
 ```
 
 This command is local/read-only with respect to Nexus: it loads published bytecode and runs the example's test extensions in memory. Do not treat its result as package publication, Tool registration, Agent binding, scheduling, settlement, or live execution proof.
@@ -38,10 +38,10 @@ Bind every vertex to a declared Tool FQN and schema. The repository-owned DAG sc
 
 ## Local published-bytecode verification
 
-After package-owned `sui move build`, run plain `sui move test` only for a Nexus-free test package. For a TAP package or test package that calls published Nexus functions, set `NEXUS_BETA_CLI` to the explicit binary path from the published Developer Setup and run:
+After package-owned `sui move build`, run plain `sui move test` only for a Nexus-free test package. For a TAP package or test package that calls published Nexus functions, run `nexus tap test --path <tap-package> --build-env testnet`.
 
 ```bash
-"$NEXUS_BETA_CLI" tap test --path <tap-package> --build-env testnet
+nexus tap test --path <tap-package> --build-env testnet
 ```
 
 The harness reads public Nexus bytecode for the selected environment, overlays only `#[test_only]` extensions in memory, and runs a local Sui VM. It needs network read access but no wallet, signer, gas, publication, registration, binding, scheduling, settlement, or asset movement. Use `--list` or one named filter to isolate the first failure, then rerun the unfiltered gate.
@@ -50,7 +50,7 @@ Repair from the earliest concrete compiler, linker, ABI/layout, witness/result, 
 
 ## Structural DAG and skill-artifact verification
 
-Run `python3 "$SKILLS_BUNDLE_ROOT/nexus-tap-development/scripts/verify_tap_artifacts.py" "$TAP_PROJECT" --require-artifacts --json` as a separate gate. It owns manifest closure, DAG vertices/edges/ports, skill `dag_path`, fixed-Tool FQNs, payment/schedule policies, input commitments, shared objects, interface revision, and artifact paths. If this command reports a mismatch, repair the JSON/artifact input and rerun this validator; do not send the failure to the beta VM. Its report is `repository-owned-structural` evidence with `runtime_proof` equal to `not-proven`.
+Run `python3 "$SKILLS_BUNDLE_ROOT/nexus-tap-development/scripts/verify_tap_artifacts.py" "$TAP_PROJECT" --require-artifacts --json` as a separate gate. It owns manifest closure, DAG vertices/edges/ports, skill `dag_path`, fixed-Tool FQNs, payment/schedule policies, input commitments, shared objects, interface revision, and artifact paths. If it reports a mismatch, repair the JSON or artifact input and rerun this validator; its report is `repository-owned-structural` evidence with `runtime_proof` equal to `not-proven`.
 
 ## Local structural verification
 
@@ -60,9 +60,15 @@ Run `sui move build`; run `sui move test` only for a Nexus-free test package or 
 
 Use `scripts/testnet_evidence.py --graphql-url https://graphql.testnet.sui.io/graphql` with optional package/module/object arguments for public deployed observations. Retain the endpoint, network label, methods, response digests, and timestamp. An observation does not prove execution, binding, or settlement.
 
-## Authorized live walk on v2.0.0
+## Authorization binding and capability boundary
 
-Use this path only when the requested work includes live DAG execution; API-only development and local VM tests do not need it. `nexus dag execute` is gone in v2.0.0: publish a DAG, then schedule a Task. Check `nexus --version`, binary provenance, `nexus dag publish --help`, and `nexus task schedule --help` against the published [Developer Setup](https://docs.talus.network/guides/getting-started/setup). A local build reporting `2.0.0` may expose later commands. The released CLI does not include `tap test` or `--authorization-binding`; protected Agent-skill bindings need the supported SDK/Move path, not guessed release flags.
+For a protected Tool vertex, bind each vertex name to the exact recipient object with the repeatable `--authorization-binding VERTEX=OBJECT_ID` option when the selected CLI exposes it. The binding names the recipient used by workflow authorization; it does not transfer ownership or prove that the signer holds the required Agent, Skill, Tool, Cashier, or verifier capability. If the high-level CLI path supplies an empty binding map, use the SDK or PTB path that exposes `AuthorizationBindings` instead of claiming the protected schedule is authorized.
+
+Keep Tool owner administration, ToolCashier policy administration, Tool Registry verification administration, and result-verifier configuration as separate capability records. A successful local VM test or an inspected public Tool does not prove custody of any of those capabilities; retain the exact capability object IDs and post-transaction reads for an authorized mutation.
+
+## Authorized live walk
+
+Use this path only when the requested work includes live DAG execution; API-only development and local VM tests do not need it. First publish a DAG, then schedule a Task. Check `nexus --version`, binary provenance, `nexus dag publish --help`, and `nexus task schedule --help` against the published [Developer Setup](https://docs.talus.network/guides/getting-started/setup).
 
 Before signing, apply the mutation gate below. Verify the target network, signer, configured executor, exact DAG entry group/inputs, and approved funding amounts. SUI address balance is not proof of usable signer-owned gas coins; Task reserve funding and transaction gas are separate. Set `PREPAY_MIST` to the approved reserve and `OCCURRENCE_BUDGET_MIST` to the approved occurrence budget, both integer MIST; the reserve must cover the intended budget. Both flags are mandatory even for an immediate one-off walk. Do not invent amounts or change executors to bypass a preflight failure.
 

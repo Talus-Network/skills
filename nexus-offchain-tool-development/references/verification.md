@@ -4,11 +4,11 @@ Read this reference after implementation checks pass or when the request involve
 
 ## 1. Classify the side effect
 
-| Operation | Default treatment |
-| --- | --- |
-| `cargo check/test/clippy/fmt`, `cargo run -- --meta`, local mock server | Local build or inspection; safe in an isolated project. |
-| `nexus tool validate offchain --url ...` | Read/health request to the supplied endpoint; use loopback or explicitly authorized staging. |
-| `nexus tool inspect --tool-fqn <FQN>`, `nexus tool auth list-keys` | Read-only network inspection; verify configuration and network provenance first. |
+| Operation                                                                                                                                         | Default treatment                                                                                              |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `cargo check/test/clippy/fmt`, `cargo run -- --meta`, local mock server                                                                           | Local build or inspection; safe in an isolated project.                                                        |
+| `nexus tool validate offchain --url ...`                                                                                                          | Read/health request to the supplied endpoint; use loopback or explicitly authorized staging.                   |
+| `nexus tool inspect --tool-fqn <FQN>`, `nexus tool auth list-keys`                                                                                | Read-only network inspection; verify configuration and network provenance first.                               |
 | `nexus tool register offchain`, `tool auth register-key`, `tool configure-verifier`, deposits, claims, unregister, updates, or cashier collection | Shared-network mutation; stop for explicit authorization and run the mutation preflight immediately before it. |
 
 Never use a localhost URL as a production registration target. A request to build, validate, or debug does not authorize registration, key publication, collateral lock, or payment movement.
@@ -151,25 +151,31 @@ When a Tool is registered with the appropriate active key and the Tool owner sep
 
 In a local required-mode test, an unsigned `/invoke` must fail before input decoding, normally with `401` and an `auth_failed` JSON error. Exercise tampered/missing/wrong signatures with the current SDK v3 tests or a local fixture, never against production traffic. For an accepted staging workflow, retain Tool/key/Task/Occurrence/Execution readbacks, FQN/Tool ID, active key IDs, input hash, nonce context, canonical result evidence, transaction digest, and verifier decision. Local Leader logs are not an on-chain verdict.
 
-Live workflow proof is conditional on an explicitly requested and authorized run, not a prerequisite for implementing or locally validating the Tool. Follow the published [execution guide](https://docs.talus.network/guides/agent-usage/execute-and-settle-agent) and selected binary's help. Released v2.0.0 uses DAG publication then Task scheduling, not `dag execute`, and requires both `--prepay-amount-mist` and `--occurrence-budget-mist`. Keep approved Task funding separate from signer-owned SUI transaction gas. Save actual Task/Occurrence/Execution links; never assume Occurrence zero or infer completion/settlement from scheduling.
+Live workflow proof is conditional on an explicitly requested and authorized run, not a prerequisite for implementing or locally validating the Tool. Follow the published [execution guide](https://docs.talus.network/guides/agent-usage/execute-and-settle-agent) and selected binary's help. Released v2.1.0 uses DAG publication then Task scheduling, not `dag execute`, and requires both `--prepay-amount-mist` and `--occurrence-budget-mist`. Keep approved Task funding separate from signer-owned SUI transaction gas. Save actual Task/Occurrence/Execution links; never assume Occurrence zero or infer completion/settlement from scheduling.
 
 Capture the staging evidence above immediately, including raw output/errors and exit status, result/payment effects/events, CLI version/revision, network/endpoint, and collection time. Testnet may prune execution history after only a few days, with no guaranteed retention interval. `history is incomplete: missing transaction …` means unavailable historical evidence, not Tool failure or nonpayment. Continue independent durable reads and retain timestamped saved evidence without presenting it as a fresh historical verification. A separately authorized rerun produces new evidence; it does not recover the old execution.
+
+## SDK and Toolkit v2.1.0 consumer boundary
+
+Use `nexus-sdk = "2.1.0"` or `nexus-toolkit = "2.1.0"` from the verified public release. The SDK's generated Move bindings are the ABI authority; the published binding libraries remain `talus-sui-move* = 0.3.0` with the release's Sui `0.4.0` type boundary. The CLI is a separately distributed release binary because `nexus-cli` is not a crates.io install target. Keep crate checks, CLI help, and on-chain deployment identity as separate evidence.
+
+When a consumer reads a Tool or transaction, carry the selected object version and previous transaction through the readback and retain the transaction effects/events used to establish causality. Do not treat an `ObjectNotFound` read as an RPC outage, an `InvalidTransactionOutput` response as usable payment evidence, or bounded recent-activity discovery as proof that no older record exists.
 
 ## 6. Version and diagnose
 
 Change the FQN version when adding/removing/renaming input ports, output variants or ports, or changing their types. Keep the old FQN for existing DAGs and register the new one after its metadata and tests pass. An implementation-only fix can retain the FQN only when the schema and observable contract remain compatible.
 
-| Symptom | Safe diagnosis |
-| --- | --- |
-| Validation rejects metadata | Check `/health` is exactly `200`, `/meta` is valid JSON, URL/FQN/description are non-empty, and output schema has top-level `oneOf`. |
-| `--from-meta` parse fails on `cargo run -- --meta` output | Extract one object from the Toolkit's array with `jq '.[0]'`; do not register the array as one Tool. |
-| Metadata still points at localhost | `--meta` intentionally uses a placeholder URL; pass `--url <final-https-url>` with `--from-meta` and review the override before any authorized transaction. |
-| FQN or Tool not found | Compare the exact `fqn!` value, version, registered record, and DAG reference; do not infer an ID from a different deployment. |
-| `401 auth_failed` | Check v3 version/header preservation, canonical input hash, Leader allowlist, active Leader key ID, and HTTPS/proxy behavior. |
-| Missing Tool signature | Check required config, exact FQN map entry, response signing key, gateway response headers, and canonical BCS response; a local JSON error is not signed result evidence. |
-| `409 request_in_flight` | The deterministic nonce is still executing; let the first request finish and retry according to Leader policy. |
-| Registration rejected | Re-check network/object bundle, valid final HTTPS URL, metadata, SUI gas, owned `Coin<US>` collateral, and authorization; do not substitute address-balance SUI for collateral. |
-| Accepted result remains pending | Separate result verification from payment, ToolCashier, occurrence, and settlement lifecycle; use the payment/debugging capability for that diagnosis. |
+| Symptom                                                   | Safe diagnosis                                                                                                                                                                  |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Validation rejects metadata                               | Check `/health` is exactly `200`, `/meta` is valid JSON, URL/FQN/description are non-empty, and output schema has top-level `oneOf`.                                            |
+| `--from-meta` parse fails on `cargo run -- --meta` output | Extract one object from the Toolkit's array with `jq '.[0]'`; do not register the array as one Tool.                                                                            |
+| Metadata still points at localhost                        | `--meta` intentionally uses a placeholder URL; pass `--url <final-https-url>` with `--from-meta` and review the override before any authorized transaction.                     |
+| FQN or Tool not found                                     | Compare the exact `fqn!` value, version, registered record, and DAG reference; do not infer an ID from a different deployment.                                                  |
+| `401 auth_failed`                                         | Check v3 version/header preservation, canonical input hash, Leader allowlist, active Leader key ID, and HTTPS/proxy behavior.                                                   |
+| Missing Tool signature                                    | Check required config, exact FQN map entry, response signing key, gateway response headers, and canonical BCS response; a local JSON error is not signed result evidence.       |
+| `409 request_in_flight`                                   | The deterministic nonce is still executing; let the first request finish and retry according to Leader policy.                                                                  |
+| Registration rejected                                     | Re-check network/object bundle, valid final HTTPS URL, metadata, SUI gas, owned `Coin<US>` collateral, and authorization; do not substitute address-balance SUI for collateral. |
+| Accepted result remains pending                           | Separate result verification from payment, ToolCashier, occurrence, and settlement lifecycle; use the payment/debugging capability for that diagnosis.                          |
 
 ## Completion evidence
 

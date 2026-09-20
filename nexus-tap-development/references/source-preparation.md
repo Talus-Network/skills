@@ -8,7 +8,7 @@ For package work, set `SKILLS_BUNDLE_ROOT` to the installed bundle root and run 
 
 Install cleanup before preparation. On normal exit or `INT`/`TERM`, call the bundle-root helper's cleanup operation once for an existing manifest, preserve the primary status, and report cleanup failure on stderr. Failed preparation or root resolution is a source-evidence gap, not permission to use another source.
 
-For published Nexus calls, use an explicit `NEXUS_BETA_CLI` binary and keep its VM output separate from the `verify_tap_artifacts.py` structural gate. For deployed observations, use bundle-root `scripts/testnet_evidence.py` with the official read-only Testnet GraphQL endpoint. API-only work follows the application reference and does not need source archives, Move tooling, or beta CLI setup.
+For published Nexus calls, use the released `nexus` binary and keep its VM output separate from the `verify_tap_artifacts.py` structural gate. For deployed observations, use bundle-root `scripts/testnet_evidence.py` with the official read-only Testnet GraphQL endpoint. API-only work follows the application reference and does not need source archives, Move tooling, or published-bytecode CLI setup.
 
 ## Executable source preparation contract
 

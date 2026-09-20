@@ -83,7 +83,7 @@ class TapVmArtifactRoutingTests(unittest.TestCase):
         self.assertIn(structural_heading, skill)
         self.assertIn("verify_tap_artifacts.py", skill)
         self.assertIn("do not retry it through", skill)
-        self.assertIn('"$NEXUS_BETA_CLI" tap test', skill)
+        self.assertIn('nexus tap test', skill)
 
         vm_section = skill.split(structural_heading, 1)[0]
         self.assertIn("## Local published-bytecode TAP tests", vm_section)
@@ -91,7 +91,7 @@ class TapVmArtifactRoutingTests(unittest.TestCase):
         self.assertIn("Structural DAG and skill-artifact verification", workflow)
         self.assertIn("verify_tap_artifacts.py", workflow)
         self.assertIn("--require-artifacts --json", workflow)
-        self.assertIn('"$NEXUS_BETA_CLI" tap test', workflow)
+        self.assertIn('nexus tap test', workflow)
 
     def test_tap_repair_eval_names_distinct_owning_gates(self) -> None:
         eval_path = ROOT / "nexus-tap-development/evals/evals.json"
@@ -99,7 +99,7 @@ class TapVmArtifactRoutingTests(unittest.TestCase):
         repair = next(entry for entry in document["evals"] if entry["id"] == "tap-test-repair")
         combined = " ".join([repair["prompt"], repair["expected_output"], *repair["expectations"]])
         self.assertIn("structural artifact validator", combined)
-        self.assertIn("explicit beta VM gate", combined)
+        self.assertIn("published-bytecode VM gate", combined)
         self.assertIn("DAG/skill JSON failure", combined)
 
 
@@ -127,7 +127,7 @@ class SkillsReadmeCommandTests(unittest.TestCase):
         text = README_PATH.read_text(encoding="utf-8")
         self.assertIn("https://" + "docs.talus.network/guides/getting-started/setup", text)
         self.assertIn("scripts/docs_website.py", text)
-        self.assertIn("--expected-version v2.0.0", text)
+        self.assertIn("--expected-version v2.1.0", text)
         self.assertIn("fails closed", text)
         website_source = (ROOT / "scripts/docs_website.py").read_text(encoding="utf-8")
         self.assertIn("CANONICAL_SETUP_URL", website_source)

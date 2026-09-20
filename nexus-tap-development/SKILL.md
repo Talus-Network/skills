@@ -7,7 +7,7 @@ description: "Build and verify Talus Agent Packages and their applications: Move
 
 Before using helper commands or fixtures, read [skill-only installation and companion setup](references/consumer-setup.md); the skill installer does not supply the repository-level companion tools.
 
-Use this skill for a DAG-backed TAP package, its Move package and skill artifact, or an application that reads an existing TAP through Nexus API REST/SSE. Keep structural/local tests, read-only API evidence, beta published-bytecode tests, and shared-network asset movement as separate evidence categories.
+Use this skill for a DAG-backed TAP package, its Move package and skill artifact, or an application that reads an existing TAP through Nexus API REST/SSE. Keep structural/local tests, read-only API evidence, published-bytecode VM tests, and shared-network asset movement as separate evidence categories.
 
 ## Task contract before setup
 
@@ -34,7 +34,7 @@ For version-sensitive setup, use public [Developer Setup](https://docs.talus.net
 
 ## Local published-bytecode TAP tests
 
-Pure local tests cover application logic. When tests call published Nexus functions, set `NEXUS_BETA_CLI` to an explicit public beta binary and run `"$NEXUS_BETA_CLI" tap test --path <tap-package> --build-env testnet`. Use `--list` or one named case only to diagnose the first concrete compiler, linker, ABI/layout, witness/result, authorization, input-commitment, output, or finalization error, then rerun the same command unfiltered. The beta directory is never exported on `PATH`; the harness uses no wallet, signer, gas, publication, registration, binding, scheduling, settlement, or asset movement. A green VM case proves only the exercised published calls.
+Pure local tests cover application logic. When tests call published Nexus functions, run the released `nexus tap test --path <tap-package> --build-env testnet` command. Use `--list` or one named case to diagnose the first concrete compiler, linker, ABI/layout, witness/result, authorization, input-commitment, output, or finalization error, then rerun the same command unfiltered. The harness uses no wallet, signer, gas, publication, registration, binding, scheduling, settlement, or asset movement. A green VM case proves only the exercised published calls.
 
 ## Structural DAG and skill-artifact validation
 
@@ -46,7 +46,7 @@ python3 "$SKILLS_BUNDLE_ROOT/nexus-tap-development/scripts/verify_tap_artifacts.
   "$TAP_PROJECT" --require-artifacts --json
 ```
 
-This gate owns `Move.toml` closure, DAG vertices/edges/ports, fixed-Tool FQNs, policies, commitments, `dag_path`, and skill-artifact consistency. A structural failure belongs to this validator; do not retry it through `"$NEXUS_BETA_CLI" tap test`. Its report is structural evidence with `runtime_proof` set to `not-proven`.
+This gate owns `Move.toml` closure, DAG vertices/edges/ports, fixed-Tool FQNs, policies, commitments, `dag_path`, and skill-artifact consistency. If the structural validator reports a failure, repair the artifact and rerun that validator; do not retry it through `nexus tap test`. Its report is structural evidence with `runtime_proof` set to `not-proven`.
 
 ## Read-only Testnet evidence
 
@@ -68,7 +68,7 @@ Keep the provider key in server-only runtime configuration and use a same-origin
 
 1. Record package, DAG, skill artifact, source references, and verification target before editing.
 2. Keep Tool/TAP interfaces tied to prepared public Move-package and SDK references; use repository-owned fixtures and validators.
-3. Classify each command as read-only inspection, local build/test, beta published-bytecode VM test, structural validation, or shared-network mutation before execution.
+3. Classify each command as read-only inspection, local build/test, published-bytecode VM test, structural validation, or shared-network mutation before execution.
 4. State explicitly whether evidence is structural, repository-owned, read-only Testnet, API projection, or live transaction evidence. Do not present one category as another.
 
 ## Talus Vision links
@@ -77,4 +77,4 @@ After exact read-only evidence returns an identifier, you may add a navigation l
 
 ## Completion standard
 
-A TAP application is locally ready when relay tests, relevant frontend typecheck/build, replay/pagination cases, and synthetic-key checks pass. A TAP package is locally ready when package tests, direct/delayed fixture paths, dependency closure, artifact validator, and applicable beta VM gate pass. Report live API, wallet, registration, execution, and settlement evidence separately.
+A TAP application is locally ready when relay tests, relevant frontend typecheck/build, replay/pagination cases, and synthetic-key checks pass. A TAP package is locally ready when package tests, direct/delayed fixture paths, dependency closure, the artifact validator, and the applicable published-bytecode VM gate pass. Report live API, wallet, registration, execution, and settlement evidence separately.

@@ -34,7 +34,7 @@ Choose the admission model from who may change the protected state, not from a k
 
 Factor the application decision/state transition so tests exercise the same logic used by `execute`. Put necessary test-only construction, inspection, invocation, and cleanup helpers in documented module extensions; do not invent public constructors for framework-owned values. Test every output branch, state delta, witness identity, and relevant authorization/recipient/commitment rejection.
 
-Use `sui move build`, and plain `sui move test` for Nexus-free logic tests. For tests calling published Nexus functions, use the parent's explicit `NEXUS_BETA_CLI` published-bytecode harness, including the unfiltered final run. The harness makes local Nexus-call tests possible; do not claim `execute` can never be tested merely because an older scaffold lacked constructors. Keep structural checks, local VM evidence, and live execution evidence separate.
+Use `sui move build` and plain `sui move test` for Nexus-free logic tests. For tests calling published Nexus functions, use the released `nexus tap test --path <tool-package> --build-env testnet` published-bytecode harness, including the unfiltered final run. The harness makes local Nexus-call tests possible; do not claim `execute` cannot be tested merely because an older scaffold lacked constructors. Keep structural checks, local VM evidence, and live execution evidence separate.
 
 Verify schema/ABI, fixed prefix order, required witness, every output tag/port, and authorization-before-mutation behavior. A witness test must prove the state object ID differs from the witness ID expected by registration. Remove placeholder inputs, TODO business logic, and untested fake outputs before marking the implementation ready.
 

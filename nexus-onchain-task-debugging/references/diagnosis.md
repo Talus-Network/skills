@@ -2,22 +2,22 @@
 
 ## Identity table
 
-| Entity               | Record                                                                                                                                  |
-| -------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Network/config       | Endpoint, chain ID, Nexus network ID, CLI/SDK version, package identities                                                               |
-| Agent/Skill          | Agent ID, Skill ID, owner/controller, network binding, package/interface version, current status                                        |
-| Task/config          | ID, owner, package/skill identity, policy, schedule configuration, status, version                                                      |
-| Occurrence/config    | ID, schedule, start/end, timeout and lifecycle configuration, status, Task link                                                         |
-| DAG/config           | ID, owner, historical version, entry group, vertices, edges, defaults, Tool bindings, port schemas                                     |
-| Inputs/evaluations   | Supplied inputs, effective inputs, source, port/cardinality/type, commitment/hash, DAG and Invocation links                             |
-| Execution/walk       | ID, Task/Occurrence/DAG links, walk index, vertex, authorization, timing, status and counters                                           |
-| Tool/Invocation      | Tool ID/FQN, registry/cashier identity, registration state, endpoint/package, timeout, policy, cost, Invocation ID, beneficiary         |
-| Result               | Invocation link, commitment, receipt, output variant/tag, output fields, schema match, commit and settlement state                      |
-| Leader/authorization | Leader and capability IDs, network binding, assignment order, request and authorization evidence, deadline, submission outcome          |
-| Task funding         | Funding source, reserve/vault ID, balance before/after, policy and ownership                                                            |
-| Execution payment    | `ExecutionPayment` ID, source, amount, lock, consumption, refund and settlement state                                                   |
-| Tool/fee payment     | Tool price/charge, cashier/beneficiary, priority fee, native SUI gas, recipients and effects                                            |
-| Provenance           | endpoint, query method, checkpoint/transaction digest, response digest                                                                  |
+| Entity               | Record                                                                                                                          |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| Network/config       | Endpoint, chain ID, Nexus network ID, CLI/SDK version, package identities                                                       |
+| Agent/Skill          | Agent ID, Skill ID, owner/controller, network binding, package/interface version, current status                                |
+| Task/config          | ID, owner, package/skill identity, policy, schedule configuration, status, version                                              |
+| Occurrence/config    | ID, schedule, start/end, timeout and lifecycle configuration, status, Task link                                                 |
+| DAG/config           | ID, owner, historical version, entry group, vertices, edges, defaults, Tool bindings, port schemas                              |
+| Inputs/evaluations   | Supplied inputs, effective inputs, source, port/cardinality/type, commitment/hash, DAG and Invocation links                     |
+| Execution/walk       | ID, Task/Occurrence/DAG links, walk index, vertex, authorization, timing, status and counters                                   |
+| Tool/Invocation      | Tool ID/FQN, registry/cashier identity, registration state, endpoint/package, timeout, policy, cost, Invocation ID, beneficiary |
+| Result               | Invocation link, commitment, receipt, output variant/tag, output fields, schema match, commit and settlement state              |
+| Leader/authorization | Leader and capability IDs, network binding, assignment order, request and authorization evidence, deadline, submission outcome  |
+| Task funding         | Funding source, reserve/vault ID, balance before/after, policy and ownership                                                    |
+| Execution payment    | `ExecutionPayment` ID, source, amount, lock, consumption, refund and settlement state                                           |
+| Tool/fee payment     | Tool price/charge, cashier/beneficiary, priority fee, native SUI gas, recipients and effects                                    |
+| Provenance           | endpoint, query method, checkpoint/transaction digest, response digest                                                          |
 
 Label every value `observed`, `derived from exact event/effect`, `user-supplied`, `unavailable`, or `conflicting`. Give each component an overall `correct`, `conflicting`, or `unavailable` verdict. Preserve the raw identifier and type; do not normalize an unknown value into a guessed one, and do not treat an object that merely exists as correct. A CLI-rendered value counts only when it is traceable to the exact on-chain object, event, or effect; help text and source code explain semantics but do not prove deployed state.
 
@@ -25,10 +25,10 @@ Label every value `observed`, `derived from exact event/effect`, `user-supplied`
 
 Before stating a cause, include one row for every related component reached through exact IDs, events, or effects. For payment components, use every row in the shared table below; do not replace those rows with an aggregate payment row.
 
-| Component | Identity evidence | State/config evidence | Cross-link or invariant | Verdict |
-| --- | --- | --- | --- | --- |
-| Agent/Skill, Task/Occurrence configuration, DAG/configuration, supplied/effective inputs, Execution/walk, Tool/Invocation, result, Leader/authorization, provenance | Exact on-chain read/event/effect | Owner, type, historical version, status, schema, timing, or amount as applicable | Exact relationship and expected value | `correct`, `conflicting`, or `unavailable` |
-| Payment components, one row per shared table row below | Exact payment object, event, or effect | Source, owner, lock, subtotal, charge, fee, gas, refund, recipient, or collection state as applicable | Exact payment ID, Execution/Invocation link, transfer, or custody invariant | `correct`, `conflicting`, or `unavailable` |
+| Component                                                                                                                                                           | Identity evidence                      | State/config evidence                                                                                 | Cross-link or invariant                                                     | Verdict                                    |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------ |
+| Agent/Skill, Task/Occurrence configuration, DAG/configuration, supplied/effective inputs, Execution/walk, Tool/Invocation, result, Leader/authorization, provenance | Exact on-chain read/event/effect       | Owner, type, historical version, status, schema, timing, or amount as applicable                      | Exact relationship and expected value                                       | `correct`, `conflicting`, or `unavailable` |
+| Payment components, one row per shared table row below                                                                                                              | Exact payment object, event, or effect | Source, owner, lock, subtotal, charge, fee, gas, refund, recipient, or collection state as applicable | Exact payment ID, Execution/Invocation link, transfer, or custody invariant | `correct`, `conflicting`, or `unavailable` |
 
 Do not omit a component because another event appears to explain the symptom. A timeout, abort, or payment-shortfall event is a protocol outcome; the completeness matrix determines whether an upstream identity, DAG, input, Tool, authorization, result, or payment mismatch caused or contributed to it.
 
@@ -36,20 +36,20 @@ Do not omit a component because another event appears to explain the symptom. A 
 
 Use this same table to complete payment rows in the component completeness matrix and to populate the payment portion of the exhaustive cause ledger. Keep every applicable row even when one object or effect contains several fields. For completeness use `correct`, `conflicting`, or `unavailable`; for causes use `confirmed`, `ruled out`, or `unresolved`.
 
-| Component | Required record and invariant | Evidence / completeness verdict | Cause status / missing or conflicting read |
-| --- | --- | --- | --- |
-| Task reserve/funding | Funding source, `TaskPaymentReserve` ID, owner, balance before/after, and policy; the reserve must belong to this Task/Occurrence and reconcile where exact amounts exist |  |  |
-| `ExecutionPayment` total and lock | `ExecutionPayment` ID, Execution link, total amount, source, and lock; the payment must belong to this Execution and its locked total must be exact |  |  |
-| `ExecutionPayment` gas subtotal | Gas budget, lock, consumption, and associated effect; the gas subtotal must reconcile to the payment and exact gas effect where exposed |  |  |
-| `ExecutionPayment` Tool subtotal | Tool budget, lock, consumption, and exact Invocation link; the Tool subtotal must reconcile to the linked Invocation |  |  |
-| `ExecutionPayment` priority subtotal | Priority budget, lock or consumption, and exact fee link; the priority subtotal must reconcile to the fee effect where exposed |  |  |
-| Tool charge/beneficiary | Tool price, policy amount, charge, cashier, beneficiary, and Invocation receipt; charge and beneficiary must be established by exact records |  |  |
-| Priority fee/recipient | Fee amount, vault or transfer, recipient, and transaction effect; recipient and amount must be established by the exact transfer/effect |  |  |
-| Native SUI gas | Signer-owned gas coin, owner, amount, and gas effect; the gas source must be distinguished from protocol payment custody |  |  |
-| Agent vault | Exact vault ID, owner, source, amount, and recipient; vault custody and transfer identity must be explicit |  |  |
-| Refund amount/state | Refund source, amount, terminal state, and reserve closure; a balance difference alone does not establish a refund |  |  |
-| Refund recipient | Exact refund destination or entitlement beneficiary and its object/effect; the recipient identity must be recorded |  |  |
-| Collection authority/deposit | Cashier capability, policy, deposit, finalized Invocation, and collection action status; collectibility requires exact authority and deposit evidence |  |  |
+| Component                            | Required record and invariant                                                                                                                                             | Evidence / completeness verdict | Cause status / missing or conflicting read |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ------------------------------------------ |
+| Task reserve/funding                 | Funding source, `TaskPaymentReserve` ID, owner, balance before/after, and policy; the reserve must belong to this Task/Occurrence and reconcile where exact amounts exist |                                 |                                            |
+| `ExecutionPayment` total and lock    | `ExecutionPayment` ID, Execution link, total amount, source, and lock; the payment must belong to this Execution and its locked total must be exact                       |                                 |                                            |
+| `ExecutionPayment` gas subtotal      | Gas budget, lock, consumption, and associated effect; the gas subtotal must reconcile to the payment and exact gas effect where exposed                                   |                                 |                                            |
+| `ExecutionPayment` Tool subtotal     | Tool budget, lock, consumption, and exact Invocation link; the Tool subtotal must reconcile to the linked Invocation                                                      |                                 |                                            |
+| `ExecutionPayment` priority subtotal | Priority budget, lock or consumption, and exact fee link; the priority subtotal must reconcile to the fee effect where exposed                                            |                                 |                                            |
+| Tool charge/beneficiary              | Tool price, policy amount, charge, cashier, beneficiary, and Invocation receipt; charge and beneficiary must be established by exact records                              |                                 |                                            |
+| Priority fee/recipient               | Fee amount, vault or transfer, recipient, and transaction effect; recipient and amount must be established by the exact transfer/effect                                   |                                 |                                            |
+| Native SUI gas                       | Signer-owned gas coin, owner, amount, and gas effect; the gas source must be distinguished from protocol payment custody                                                  |                                 |                                            |
+| Agent vault                          | Exact vault ID, owner, source, amount, and recipient; vault custody and transfer identity must be explicit                                                                |                                 |                                            |
+| Refund amount/state                  | Refund source, amount, terminal state, and reserve closure; a balance difference alone does not establish a refund                                                        |                                 |                                            |
+| Refund recipient                     | Exact refund destination or entitlement beneficiary and its object/effect; the recipient identity must be recorded                                                        |                                 |                                            |
+| Collection authority/deposit         | Cashier capability, policy, deposit, finalized Invocation, and collection action status; collectibility requires exact authority and deposit evidence                     |                                 |                                            |
 
 Do not infer a transfer, charge, refund, recipient, or entitlement from an amount or object ID alone. A missing row remains `unavailable`; a contradictory source remains `conflicting`.
 
@@ -57,10 +57,10 @@ Do not infer a transfer, charge, refund, recipient, or entitlement from an amoun
 
 After completing every independent safe read, list every applicable cause exposed by correctness invariants. This is an exhaustive protocol-record ledger, not a list of imagined actor or service behaviors. The shared payment table supplies one independent cause row for each payment component; copy its invariant, cite the exact evidence, and record the missing or conflicting read.
 
-| Cause class | Exact invariant being tested | On-chain evidence | Status | Conflict or missing read |
-| --- | --- | --- | --- | --- |
-| Network/package/interface identity; Task/Occurrence configuration; DAG topology, reachability, defaults, binding, or schema; supplied/effective input source, cardinality, type, value, or commitment; Execution/walk lifecycle; Tool registration, Invocation, receipt, or result; Leader capability, authorization, deadline, submission, or takeover; provenance/version consistency | One exact invariant per row | Exact object/event/effect identifier, version, checkpoint, or transaction | `confirmed`, `ruled out`, or `unresolved` | Exact contradiction, or existing read that is missing or does not expose the value |
-| Payment component, one row per shared payment table row | Exact invariant in the corresponding shared payment row | Exact payment object, event, effect, transfer, Invocation, or checkpoint | `confirmed`, `ruled out`, or `unresolved` | Exact contradiction, or missing/non-exposing payment read |
+| Cause class                                                                                                                                                                                                                                                                                                                                                                             | Exact invariant being tested                            | On-chain evidence                                                         | Status                                    | Conflict or missing read                                                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------- |
+| Network/package/interface identity; Task/Occurrence configuration; DAG topology, reachability, defaults, binding, or schema; supplied/effective input source, cardinality, type, value, or commitment; Execution/walk lifecycle; Tool registration, Invocation, receipt, or result; Leader capability, authorization, deadline, submission, or takeover; provenance/version consistency | One exact invariant per row                             | Exact object/event/effect identifier, version, checkpoint, or transaction | `confirmed`, `ruled out`, or `unresolved` | Exact contradiction, or existing read that is missing or does not expose the value |
+| Payment component, one row per shared payment table row                                                                                                                                                                                                                                                                                                                                 | Exact invariant in the corresponding shared payment row | Exact payment object, event, effect, transfer, Invocation, or checkpoint  | `confirmed`, `ruled out`, or `unresolved` | Exact contradiction, or missing/non-exposing payment read                          |
 
 - `confirmed` requires an exact on-chain contradiction or invariant violation.
 - `ruled out` requires exact on-chain evidence satisfying the whole invariant for the historical Execution; object presence or later configuration is insufficient.
@@ -116,7 +116,7 @@ Resolve the exact versioned Tool FQN from the historical DAG, skill artifact, or
 
 Capture raw output/errors and exit status, collection time, CLI version/revision, network/endpoint, exact IDs, transaction effects/events, and result/payment evidence immediately. Testnet may prune execution history after only a few days, with no guaranteed retention interval. `history is incomplete: missing transaction …` prevents historical reconstruction; it does not establish a failed Execution or any root cause. Preserve timestamped saved evidence as historical, continue independent durable reads, and leave dependent cause rows unresolved. Current state cannot replace missing historical state.
 
-In v2.0.0, walks originate from DAG publication and Task scheduling, not `dag execute`. Scheduling requires `--prepay-amount-mist` and `--occurrence-budget-mist`; inspect the resulting reserve, budget, and separate native gas evidence rather than inferring funding from command success. Do not publish, schedule, refill, or rerun to complete this worksheet. A separately authorized new run is new evidence, not recovery of the old trace.
+In v2.1.0, walks originate from DAG publication and Task scheduling, not `dag execute`. Scheduling requires `--prepay-amount-mist` and `--occurrence-budget-mist`; inspect the resulting reserve, budget, and separate native gas evidence rather than inferring funding from command success. Do not publish, schedule, refill, or rerun to complete this worksheet. A separately authorized new run is new evidence, not recovery of the old trace.
 
 ## Correctness invariants
 
@@ -144,6 +144,12 @@ In v2.0.0, walks originate from DAG publication and Task scheduling, not `dag ex
 ## Read and mutation boundaries
 
 Do not stop at the first plausible cause, terminal event, missing field, or contradiction while another independent required on-chain read is available. Continue through DAG/configuration, inputs, Execution/Tool/result/authorization, and every payment surface, then list all cause rows. When a missing or contradictory anchor prevents dependent reads, mark those dependent causes `unresolved` and identify the exact blocker rather than guessing their state. Do not develop ad hoc tooling to cross this boundary, and do not refill, settle, abort, close, reschedule, or retry from this worksheet. New tooling and chain mutations require separate explicit user authorization.
+
+## SDK causal-read and failure classification
+
+When a Rust SDK readback is part of the diagnosis, preserve the exact object version and previous transaction from `ObjectUpdateReference`, and the transaction digest, checkpoint, effects, and events from `TransactionUpdate`. `ObjectNotFound` is a definitive absence at the requested read boundary; it is different from an unavailable RPC or incomplete history. `InvalidTransactionOutput` means the returned effects or object output cannot be trusted for state inference. Keep those outcomes separate in the cause ledger.
+
+For event evidence, record `EventPage.source` as `Live` or `Replay`. Replay uses an archival endpoint and bounded checkpoint ranges; a replay result cannot be presented as a live subscription observation, and a live stream cannot fill an archival gap. `RecoveryWindow::load`, `WorkObjects`, and `discover_work_objects` provide bounded recovery inputs from available recent activity; they do not prove exhaustive historical absence. Preserve any server acknowledgment that an execution, simulation, or finality read was causally observed before treating it as a completion claim. The 2.1.0 SDK also decodes Sui protocol-137 transaction expiration in both `ValidDuring` and `Validity` wire forms; record epoch or timestamp bounds, chain, and nonce, and remember that `Validity` may include `AllowedProposers`. This is decoding compatibility, not evidence of a network upgrade.
 
 ## Evidence limits
 

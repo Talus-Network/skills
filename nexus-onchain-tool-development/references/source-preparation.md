@@ -8,7 +8,7 @@ Set `SKILLS_BUNDLE_ROOT` to the installed Skills bundle. Run `scripts/prepare_so
 
 Install the cleanup trap before preparation. Cleanup calls the same bundle-root helper exactly once for a manifest on normal exit or `INT`/`TERM`, preserves the primary status, and reports cleanup failure on stderr. A failed prepare/root resolution is a concrete source-evidence blocker; do not substitute a different archive or local source tree.
 
-Use the published Setup authority for version-sensitive commands and set `NEXUS_BETA_CLI` to an explicit binary when a test calls published Nexus functions. Keep pure Move tests, structural validation, the beta published-bytecode VM gate, and read-only Testnet GraphQL evidence separate. Testnet observations use the bundle-root `scripts/testnet_evidence.py` helper and never a wallet or state-changing command.
+Use the published Setup authority for version-sensitive commands and the released `nexus` binary for tests that call published Nexus functions. Keep pure Move tests, structural validation, the local published-bytecode VM gate, and read-only Testnet GraphQL evidence separate. Testnet observations use the bundle-root `scripts/testnet_evidence.py` helper and never a wallet or state-changing command.
 
 ## Executable source preparation contract
 

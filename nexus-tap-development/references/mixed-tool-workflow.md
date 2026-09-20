@@ -14,11 +14,11 @@ Cover each legal provider choice, provider timeout/error, malformed JSON, invali
 
 ## Published-bytecode check
 
-After the pure application tests, run the beta `"$NEXUS_BETA_CLI" tap test --path <tap-package> --build-env testnet` command when the TAP tests call published Nexus functions. It reads public bytecode and overlays only test extensions in a local VM; it does not publish, register, bind, schedule, settle, or move assets. Diagnose the earliest ABI, authorization, commitment, output, or finalization error, make the smallest repair, and rerun the same VM gate before artifact checks.
+After pure application tests, run `nexus tap test --path <tap-package> --build-env testnet` when TAP tests call published Nexus functions. It reads public bytecode and overlays only test extensions in a local VM; it does not publish, register, bind, schedule, settle, or move assets. Diagnose the earliest ABI, authorization, commitment, output, or finalization error, make the smallest repair, and rerun the same VM gate before artifact checks.
 
 ## Artifact checks
 
-Validate the DAG edge, input/output ports, fixed Tool identity, skill path, payment policy, and schedule policy against caller-held semantic intent with `verify_tap_artifacts.py --require-artifacts --json`. This structural validator owns JSON/artifact failures; negative mutations must fail closed and must not be routed to the beta VM.
+Validate the DAG edge, input/output ports, fixed Tool identity, skill path, payment policy, and schedule policy against caller-held semantic intent with `verify_tap_artifacts.py --require-artifacts --json`. This structural validator owns JSON and artifact failures; negative mutations must fail closed and must not be routed to the local published-bytecode VM.
 
 ## Deployed read
 

@@ -56,10 +56,10 @@ Commit the generated `Move.lock` and keep the package revision, network, and pub
 
 ## Published Setup authority
 
-Version-sensitive instructions use the published [Developer Setup](https://docs.talus.network/guides/getting-started/setup), not a source-repository checkout. Check the page anonymously before relying on a release-specific command; the expected release for this bundle is `v2.1.0`.
+Version-sensitive instructions use the published [Developer Setup](https://docs.talus.network/guides/getting-started/setup), not a source-repository checkout. Check the page anonymously before relying on a release-specific command; the expected release for this bundle is `v2.1.1`.
 
 ```bash
-python3 scripts/docs_website.py --url https://docs.talus.network/guides/getting-started/setup --expected-version v2.1.0
+python3 scripts/docs_website.py --url https://docs.talus.network/guides/getting-started/setup --expected-version v2.1.1
 ```
 
 The check is read-only and fails closed on an unavailable page, an unsafe redirect, malformed content, or a version mismatch. It never installs a dependency or changes a Sui environment; show any resulting setup command to the user as a separate, explicitly authorized workflow.

@@ -45,10 +45,10 @@ class Response:
 class DocsWebsiteTests(unittest.TestCase):
     def setUp(self) -> None:
         self.module = load_module()
-        self.body = b"# Developer Setup\n\nThe installable CLI/SDK release is `v2.1.0`.\n"
+        self.body = b"# Developer Setup\n\nThe installable CLI/SDK release is `v2.1.1`.\n"
 
     def test_extracts_release_version_without_using_dependency_versions(self) -> None:
-        self.assertEqual(self.module.extract_setup_version(self.body.decode()), "v2.1.0")
+        self.assertEqual(self.module.extract_setup_version(self.body.decode()), "v2.1.1")
         with self.assertRaisesRegex(self.module.PublishedDocsError, "parseable"):
             self.module.extract_setup_version("# Setup\nSui 1.78.0\nTGE v1.1.2\n")
 
@@ -63,7 +63,7 @@ class DocsWebsiteTests(unittest.TestCase):
         page = self.module.fetch_setup_page(opener=opener)
         self.assertEqual(page.requested_url, self.module.CANONICAL_SETUP_URL)
         self.assertEqual(page.final_url, self.module.CANONICAL_SETUP_URL + "/")
-        self.assertEqual(page.version, "v2.1.0")
+        self.assertEqual(page.version, "v2.1.1")
         self.assertEqual(calls, [(self.module.CANONICAL_SETUP_URL, 30.0)])
         self.assertTrue(response.closed)
 
@@ -82,7 +82,7 @@ class DocsWebsiteTests(unittest.TestCase):
             return responses.pop(0)
 
         page = self.module.fetch_setup_page(opener=opener, sleep=sleeps.append)
-        self.assertEqual(page.version, "v2.1.0")
+        self.assertEqual(page.version, "v2.1.1")
         self.assertEqual(sleeps, [0.25, 0.5])
         self.assertTrue(all(response.closed for response in all_responses))
 

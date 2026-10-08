@@ -319,7 +319,7 @@ class PublicSourcePolicyTests(unittest.TestCase):
         approved = (
             "https://" + "github.com/Talus-Network/nexus-sdk/tree/main/cli",
             "https://" + "github.com/Talus-Network/nexus-move-packages/tree/main/packages",
-            "https://" + "codeload.github.com/Talus-Network/nexus-sdk/tar.gz/" + "45d397aafcfbeeeaf5032d5fb9fa5d99b3f36205",
+            "https://" + "codeload.github.com/Talus-Network/nexus-sdk/tar.gz/" + "08bfe76e726922ce512d623fbc1d2e1bd786bcd4",
             "https://" + "github.com/MystenLabs/sui/tree/d8459684b41eb09ab23fe16a9dd84173270bbaba/crates/sui-framework/packages",
             "https://" + "codeload.github.com/MystenLabs/sui/tar.gz/d8459684b41eb09ab23fe16a9dd84173270bbaba",
             "https://graphql.testnet.sui.io/graphql",

@@ -127,7 +127,7 @@ class SkillsReadmeCommandTests(unittest.TestCase):
         text = README_PATH.read_text(encoding="utf-8")
         self.assertIn("https://" + "docs.talus.network/guides/getting-started/setup", text)
         self.assertIn("scripts/docs_website.py", text)
-        self.assertIn("--expected-version v2.1.0", text)
+        self.assertIn("--expected-version v2.1.1", text)
         self.assertIn("fails closed", text)
         website_source = (ROOT / "scripts/docs_website.py").read_text(encoding="utf-8")
         self.assertIn("CANONICAL_SETUP_URL", website_source)

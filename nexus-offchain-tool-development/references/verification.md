@@ -84,7 +84,7 @@ The current Toolkit configuration is JSON with no top-level `version` field:
 
 ```json
 {
-  "invoke_max_body_bytes": 10485760,
+  "invoke_max_body_bytes": 12582912,
   "signed_http": {
     "mode": "required",
     "allowed_leaders_path": "<runtime-config-dir>/allowed-leaders.json",
@@ -151,13 +151,13 @@ When a Tool is registered with the appropriate active key and the Tool owner sep
 
 In a local required-mode test, an unsigned `/invoke` must fail before input decoding, normally with `401` and an `auth_failed` JSON error. Exercise tampered/missing/wrong signatures with the current SDK v3 tests or a local fixture, never against production traffic. For an accepted staging workflow, retain Tool/key/Task/Occurrence/Execution readbacks, FQN/Tool ID, active key IDs, input hash, nonce context, canonical result evidence, transaction digest, and verifier decision. Local Leader logs are not an on-chain verdict.
 
-Live workflow proof is conditional on an explicitly requested and authorized run, not a prerequisite for implementing or locally validating the Tool. Follow the published [execution guide](https://docs.talus.network/guides/agent-usage/execute-and-settle-agent) and selected binary's help. Released v2.1.0 uses DAG publication then Task scheduling, not `dag execute`, and requires both `--prepay-amount-mist` and `--occurrence-budget-mist`. Keep approved Task funding separate from signer-owned SUI transaction gas. Save actual Task/Occurrence/Execution links; never assume Occurrence zero or infer completion/settlement from scheduling.
+Live workflow proof is conditional on an explicitly requested and authorized run, not a prerequisite for implementing or locally validating the Tool. Follow the published [execution guide](https://docs.talus.network/guides/agent-usage/execute-and-settle-agent) and selected binary's help. Released v2.1.1 uses DAG publication then Task scheduling, not `dag execute`, and requires both `--prepay-amount-mist` and `--occurrence-budget-mist`. Keep approved Task funding separate from signer-owned SUI transaction gas. Save actual Task/Occurrence/Execution links; never assume Occurrence zero or infer completion/settlement from scheduling.
 
 Capture the staging evidence above immediately, including raw output/errors and exit status, result/payment effects/events, CLI version/revision, network/endpoint, and collection time. Testnet may prune execution history after only a few days, with no guaranteed retention interval. `history is incomplete: missing transaction …` means unavailable historical evidence, not Tool failure or nonpayment. Continue independent durable reads and retain timestamped saved evidence without presenting it as a fresh historical verification. A separately authorized rerun produces new evidence; it does not recover the old execution.
 
-## SDK and Toolkit v2.1.0 consumer boundary
+## SDK and Toolkit consumer version boundary
 
-Use `nexus-sdk = "2.1.0"` or `nexus-toolkit = "2.1.0"` from the verified public release. The SDK's generated Move bindings are the ABI authority; the published binding libraries remain `talus-sui-move* = 0.3.0` with the release's Sui `0.4.0` type boundary. The CLI is a separately distributed release binary because `nexus-cli` is not a crates.io install target. Keep crate checks, CLI help, and on-chain deployment identity as separate evidence.
+Use `nexus-sdk = "2.1.1"` or `nexus-toolkit = "2.1.1"` from the verified public release. The SDK's generated Move bindings are the ABI authority; the published binding libraries remain `talus-sui-move* = 0.3.0` with the release's Sui `0.4.0` type boundary. The CLI is a separately distributed release binary because `nexus-cli` is not a crates.io install target. Keep crate checks, CLI help, and on-chain deployment identity as separate evidence.
 
 When a consumer reads a Tool or transaction, carry the selected object version and previous transaction through the readback and retain the transaction effects/events used to establish causality. Do not treat an `ObjectNotFound` read as an RPC outage, an `InvalidTransactionOutput` response as usable payment evidence, or bounded recent-activity discovery as proof that no older record exists.
 

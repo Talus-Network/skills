@@ -20,7 +20,7 @@ from urllib.request import Request, urlopen
 
 
 CANONICAL_SETUP_URL = "https://docs.talus.network/guides/getting-started/setup"
-EXPECTED_SETUP_VERSION = "v2.1.0"
+EXPECTED_SETUP_VERSION = "v2.1.1"
 PUBLISHED_DOCS_HOST = "docs.talus.network"
 MAX_SETUP_BYTES = 2 * 1024 * 1024
 USER_AGENT = "talus-skills-public-docs/1"

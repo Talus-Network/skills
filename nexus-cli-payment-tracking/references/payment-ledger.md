@@ -35,7 +35,7 @@ Record exact object IDs, owners, types, versions, transaction/checkpoint provena
 
 ## v2 funding and evidence retention
 
-Released v2.1.0 starts walks through DAG publication and Task scheduling, not `dag execute`. Scheduling requires both `--prepay-amount-mist` (Task reserve funding) and `--occurrence-budget-mist` (occurrence budget), including immediate one-off walks. Neither value proves an actual Invocation charge or settlement. Reconcile them against the linked reserve and Execution payment records; transaction gas is separate, and SUI address balance alone does not prove usable signer-owned gas coins. Payment investigation does not authorize publishing, scheduling, refilling, or collecting funds.
+Released v2.1.1 starts walks through DAG publication and Task scheduling, not `dag execute`. Scheduling requires both `--prepay-amount-mist` (Task reserve funding) and `--occurrence-budget-mist` (occurrence budget), including immediate one-off walks. Neither value proves an actual Invocation charge or settlement. Reconcile them against the linked reserve and Execution payment records; transaction gas is separate, and SUI address balance alone does not prove usable signer-owned gas coins. Payment investigation does not authorize publishing, scheduling, refilling, or collecting funds.
 
 Save raw readbacks/errors and exit status, collection time, CLI version/revision, network/endpoint, exact IDs, and transaction effects/events and payment receipts immediately. Testnet may prune execution history after only a few days, without a guaranteed retention interval. `history is incomplete: missing transaction …` makes the historical trace unavailable; it is not zero payment, failed execution, or proof that no settlement occurred. Continue independent durable reads and mark dependent ledger rows unavailable. Saved evidence remains timestamped historical evidence, not a fresh read. A separately authorized rerun creates a different payment trace and cannot recover the old one.
 
@@ -52,3 +52,11 @@ When event pages are used, retain `EventPage.source` and distinguish `Live` subs
 ## Safe conclusion
 
 An exact Task → Occurrence → Execution → `ExecutionPayment` relationship and matching Tool/Invocation/payment locks are required before declaring a trace complete. If an ID, owner, version, type origin, network identity, or relationship is absent or inconsistent, mark the row unavailable/conflicting and return the earliest missing read. Do not repair a payment trace by guessing a command or submitting a transaction.
+
+## cost and recovery readbacks
+
+Use occurrence cost's `outstanding_invocation_ids`, or SDK `execution_cost_details`, to identify retained payment locks in the same snapshot as the cost summary. `execution_cost` retains its old result shape. A configured Tool price or an upload receipt is not an Invocation charge.
+
+Wallet-funded Walrus purchases spend WAL for storage and SUI for storage-transaction gas, independently of the Task reserve and `ExecutionPayment`. The storage ceiling checks the per-blob estimate; execution-time prices may differ. Preserve Blob owner/expiry/content receipts separately from Task/Occurrence/Invocation settlement evidence.
+
+If recovery is separately authorized, the ID-free `task occurrence abort-expired` path discovers eligible locks, settles available committed results, resolves expired Invocations, and settles finished occurrences. Record each confirmed resolution and final observed occurrence rather than claiming the whole occurrence settled from a successful command alone. Single-ID recovery retains its narrower scope. Do not initiate recovery, upload, extension, deletion, or refill merely to complete this read-only ledger.

@@ -52,7 +52,7 @@ Replay accepts only the recorded evidence boundary. Every `bundled:` source must
 
 ## Public source preparation
 
-`prepare_sources.py` creates a disposable manifest-backed workspace and downloads only three reviewed anonymous public GitHub archives over HTTPS. The Nexus SDK source is pinned to release commit `45d397aafcfbeeeaf5032d5fb9fa5d99b3f36205` with archive SHA-256 `cbdad0233138bc56c58f44e103d663cb7ca52ba864d601937ac3a8d183acd310`; the Nexus Move Packages and Sui pins remain separately reviewed, including Sui revision `d8459684b41eb09ab23fe16a9dd84173270bbaba` for installed `sui 1.78.0-d8459684b41e`. Archive identity, exact refs/checksums, required paths, extracted-tree digests, and cleanup ownership are recorded in the manifest. The helper never searches the host filesystem for a source tree.
+`prepare_sources.py` creates a disposable manifest-backed workspace and downloads only three reviewed anonymous public GitHub archives over HTTPS. The Nexus SDK source is pinned to release commit `08bfe76e726922ce512d623fbc1d2e1bd786bcd4` with archive SHA-256 `86309357d25e56172d84d83eb7f0add37082157cde94ba00439536d39bbcd5b3`; the Nexus Move Packages and Sui pins remain separately reviewed, including Sui revision `d8459684b41eb09ab23fe16a9dd84173270bbaba` for installed `sui 1.78.0-d8459684b41e`. Archive identity, exact refs/checksums, required paths, extracted-tree digests, and cleanup ownership are recorded in the manifest. The helper never searches the host filesystem for a source tree.
 
 ```bash
 SOURCE_MANIFEST=""
@@ -135,7 +135,7 @@ The live command only reads public MVR HTTPS endpoints and rejects a generic suc
 
 ## Published Setup authority
 
-The canonical live authority for version-sensitive setup is the published [Developer Setup](https://docs.talus.network/guides/getting-started/setup). Check it anonymously with `python3 <skills-bundle>/scripts/docs_website.py --expected-version v2.1.0` before following a release-specific command. The checker accepts only the canonical HTTPS destination, validates the final URL, parses the release sentence, and never installs packages, switches a Sui environment, or mutates state.
+The canonical live authority for version-sensitive setup is the published [Developer Setup](https://docs.talus.network/guides/getting-started/setup). Check it anonymously with `python3 <skills-bundle>/scripts/docs_website.py --expected-version v2.1.1` before following a release-specific command. The checker accepts only the canonical HTTPS destination, validates the final URL, parses the release sentence, and never installs packages, switches a Sui environment, or mutates state.
 
 ## Read-only Sui testnet evidence
 

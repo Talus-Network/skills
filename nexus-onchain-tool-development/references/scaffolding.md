@@ -14,7 +14,9 @@ After the parent skill's contract and Setup checks, use the released public scaf
 nexus tool new --name counter_tool --description "Increment and report a shared counter" --template move --target ./
 ```
 
-Adapt the generated package instead of maintaining a second frozen template. Use `nexus_primitives = { r.mvr = "@talus/nexus-primitives" }` and `nexus_interface = { r.mvr = "@talus/nexus-interface" }` as needed, retain the Tool's own unpublished address, and commit the resolved `Move.lock`. Match edition and any environment configuration to the selected compiler and documented test-extension support. A general Tool scaffold and a TAP scaffold have different manifest contracts; use the TAP workflow for a TAP package. Never search for sibling implementation checkouts or copy environment-specific dependency paths.
+For CLI 2.1.1, the Move scaffold defaults to Standard mode. Pass `--mode workflow-authorization` only when the Tool requires an Agent vertex authorization proof, and implement the checks described below. Confirm `nexus --version` and `nexus tool new --help` after the published Setup check; older binaries do not expose this selector.
+
+Adapt the generated package instead of maintaining a second frozen template. Use `nexus_primitives = { r.mvr = "@talus/nexus-primitives" }` and `nexus_interface = { r.mvr = "@talus/nexus-interface" }` as needed, retain the versioned `2024.alpha` manifest without an `[addresses]` table, and commit the resolved `Move.lock`. Match edition and any environment configuration to the selected compiler and documented test-extension support. A general Tool scaffold and a TAP scaffold have different manifest contracts; use the TAP workflow for a TAP package. Never search for sibling implementation checkouts or copy environment-specific dependency paths.
 
 ## Choose the execution admission model
 

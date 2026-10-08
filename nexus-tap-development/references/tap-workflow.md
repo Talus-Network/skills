@@ -113,3 +113,11 @@ Capture raw readbacks, errors and exit status, transaction effects/events, resul
 ## Mutation gate
 
 Publishing a package, registering a Tool, binding a skill, scheduling a Task, upgrading a package, depositing funds, or submitting any transaction is a shared-network mutation. Stop before it unless the user authorizes the exact operation and the preflight proves network identity, package lineage, object IDs, ownership/capability, recipient, amount, gas, and expected post-state reads.
+
+## Input files, references, and retained storage
+
+With CLI 2.1.1, `task create` and `task schedule` accept `--input-file PATH` instead of `--input-json`, repeatable `--input-ref VERTEX.PORT=FILE` to reuse saved Walrus references, and `--remote VERTEX.PORT` for wallet-funded uploads. `--remote-receipts DIR` saves per-port references and upload recovery records; reuse the directory to resume matching work. Check the published Setup authority and exact command help before using these flags.
+
+Reject conflicting input sources and validate the Task against its published DAG before new storage payment. The SDK's `TaskInputPlan` supplies preflight inputs, verifies existing references, and materializes selected uploads; call `Scheduler::preflight_task_inputs` before materialization. WAL storage payment and SUI transaction gas are separate from the Task reserve. Reference files remain useful if Task submission fails; they are not evidence that a Task exists. Keep the saved signed registration after an uncertain upload submission rather than purchasing storage again.
+
+The per-invocation resolved input budget is 8 MiB across all ports, including `Many` values; large inputs target HTTP Tools, while Sui Tools retain transaction limits. Storage retention is independent of Task lifetime. Schedule no occurrence beyond retained data availability without an extension plan. The owner can extend a Blob before expiry, and can delete only explicitly deletable storage. Record reference paths, digest checks, expiry, Task receipts, and recovery outcomes separately. Never upload or sign solely to complete a read-only diagnosis.

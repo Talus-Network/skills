@@ -8,9 +8,13 @@ Choose the FQN, module/function name, input schema, output tags/payload types, w
 
 ## 2. Prepare dependencies
 
+For a Tool that performs the required worksheet-origin check, add `nexus_workflow = { r.mvr = "@talus/nexus-workflow" }` beside the public primitives and interface dependencies and commit the resolved `Move.lock`. The production dependency is required to name the canonical `DAGExecution` type; do not use a lookalike type or a type-name string.
+
 For a network-facing consumer, use `r.mvr = "@talus/nexus-primitives"` and `r.mvr = "@talus/nexus-interface"` from the reviewed [Move Registry package pages](https://www.moveregistry.com/package/@talus/nexus-interface); commit `Move.lock` and match its resolution to the target network. For offline source inspection and deterministic fixture tests, run the public helper with repeated `--only nexus-sdk --only nexus-move-packages --only sui`, resolve roots from its manifest, copy the needed public Move package closure plus only the pinned Sui framework packages into a disposable consumer project, and retain `Published.toml` provenance. Never put a host path into a maintained network-facing manifest, and do not infer unregistered policy/kernel registry names.
 
 ## 3. Implement and test
+
+In every Standard or WorkflowAuthorization `execute`, first require the requirements proof's full creator type to be `DAGExecution`, require its creator ID to equal `onchain_tool_result::execution_id(&result)`, and reject `onchain_tool_result::is_finalized(&result)`. Use the complete helper and actual-input recipe in [the scaffolding contract](scaffolding.md#authenticate-the-workflow-invocation). Next derive the canonical schema-ordered commitment from every actual registered argument and state-object ID, assert equality with `onchain_tool_result::input_commitment(&result)`, and only then perform effects. In WorkflowAuthorization, also check the application's expected issuer and pass the computed commitment to `consume_verified_for_worksheet_as_recipient`; do not pass the result value merely read back. Both modes retain exact recipient, Task, witness, custody, amount, and application-policy checks. Test fake/untyped/lookalike worksheets, mismatched execution IDs, finalized reuse, another Task's grant, altered concrete inputs/state IDs, authorization/issuer/recipient/commitment/witness mismatches, and a legitimate recurring execution.
 
 Consume the state witness and any workflow authorization against the exact recipient, state UID, and input commitment before mutation. Satisfy requirements, construct a declared `TaggedOutput` on every branch, and finalize through the public result API. Test successful output, each error branch, malformed input, authorization mismatch, wrong recipient, commitment mismatch, witness mismatch, and mutation-order violations.
 
@@ -45,6 +49,8 @@ For authorized live proof, save exact Task/Occurrence/Execution and Tool IDs, re
 ## 7. Gate mutations
 
 Publication, Tool registration, DAG binding, scheduling, upgrades, deposits, and transactions require a separate user-authorized plan. Immediately before an authorized mutation, verify endpoint/network identity, package lineage, exact object IDs, signer/capability custody, recipient, amount, gas, and expected post-state reads. Stop on any mismatch.
+
+For a security cutover, type provenance identifies the defining `DAGExecution` package/type, not a runtime version. Audit all accepted worksheet issuer lineages for typed worksheet issuance and Task stamping. Inventory old public Tool entry points that can access protected state; a registry pointer update does not revoke old bytecode. Revoke old state authority when the application already supports it, or migrate/retire protected state and assets through an authorized flow, then test old direct calls before claiming the cutover complete. Do not expose a broad `RuntimePermit` to callers: it remains trusted-runtime authority and is not a replacement for Tool-local provenance, commitment, and application checks.
 
 ## Failure recovery
 

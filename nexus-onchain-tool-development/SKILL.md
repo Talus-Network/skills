@@ -35,6 +35,8 @@ For deployed package, module, or object facts, use the bundle-root read-only `sc
 ## Move contract invariants
 
 - `execute` is public, returns no Move value, takes framework-owned values before application inputs, and ends with `&mut TxContext`.
+- Every Standard and WorkflowAuthorization Tool authenticates its worksheet/result pair before grant verification or application effects: require the canonical `nexus_workflow::execution::DAGExecution` creator type, require the worksheet creator ID to equal the result execution ID, and reject an already-finalized result. The full guard and dependency rule are in [the workflow](references/workflow.md); a generated scaffold is not evidence that it already includes the guard.
+- Every Tool recomputes the canonical commitment from the actual registered inputs and state-object IDs, then requires equality with `onchain_tool_result::input_commitment(&result)` before effects. WorkflowAuthorization passes that computed value, rather than the result value read back, to its grant verifier. Use the schema-ordered recipe in [the scaffolding contract](references/scaffolding.md#bind-the-actual-tool-inputs).
 - When workflow authorization is required, consume the verified proof against the worksheet recipient, state UID, and `onchain_tool_result::input_commitment(&result)` before mutation. Dropping a `ProvenValue` is not validation.
 - Keep the Tool witness identity distinct from shared application state and dynamic-field wrapper IDs. Produce exactly one declared `TaggedOutput` and finalize/share the result on every returning branch.
 - Keep output tags/ports, input commitments, and application state transitions aligned with the declared ABI. Use real rejection assertions for invalid authority or invariants.

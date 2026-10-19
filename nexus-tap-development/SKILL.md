@@ -36,6 +36,8 @@ For version-sensitive setup, use public [Developer Setup](https://docs.talus.net
 
 Pure local tests cover application logic. When tests call published Nexus functions, run the released `nexus tap test --path <tap-package> --build-env testnet` command. Use `--list` or one named case to diagnose the first concrete compiler, linker, ABI/layout, witness/result, authorization, input-commitment, output, or finalization error, then rerun the same command unfiltered. The harness uses no wallet, signer, gas, publication, registration, binding, scheduling, settlement, or asset movement. A green VM case proves only the exercised published calls.
 
+For a TAP package containing an on-chain Tool, before any Tool effect authenticate the canonical `DAGExecution` worksheet type, bind its creator ID to the result execution ID, and reject finalized results. In both admission modes, derive the canonical schema-ordered commitment from the actual Tool inputs and state IDs, compare it with the result commitment before effects, and pass that computed value into the WorkflowAuthorization verifier. Retain issuer, recipient, Task, witness, and application-policy checks. Add the canonical `nexus_workflow` production dependency, and do not assume a generated scaffold includes this guard. A registry pointer does not revoke old public Tool bytecode; the protected state needs an authorized revocation, migration, or retirement cutover before an upgraded Tool is considered deployed.
+
 ## Structural DAG and skill-artifact validation
 
 Run the structural gate separately:

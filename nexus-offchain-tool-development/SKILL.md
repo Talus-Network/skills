@@ -1,6 +1,6 @@
 ---
 name: nexus-offchain-tool-development
-description: Build, test, and verify standalone Rust HTTP Tools for Nexus external-provider workflows, including bounded provider I/O, stable schemas, secret-free metadata, signed HTTP v3, replay protection, and registration preparation. Use for off-chain Tool services; route Move Tools, TAP applications, payment, or diagnosis elsewhere.
+description: Build, test, and verify standalone Rust HTTP Tools for Nexus external-provider workflows, including bounded provider I/O, stable schemas, secret-free metadata, signed HTTP v3.1 context authentication with v3 result signing, replay protection, and registration preparation. Use for off-chain Tool services; route Move Tools, TAP applications, payment, or diagnosis elsewhere.
 ---
 
 # Nexus off-chain Tool development
@@ -53,7 +53,7 @@ Read [the scaffolding reference](references/scaffolding.md) before reviewing an 
 
 ## Signed HTTP and registration boundary
 
-Signed HTTP v3 authenticates the canonical schema-ordered input commitment and canonical response bytes with a deterministic invocation nonce; it does not replace HTTPS. Test missing/tampered/wrong signatures and replay locally with the current Toolkit contract. Registration is a shared-network mutation: verify exact FQN, schema, final endpoint/path, beneficiary, collateral, gas, signer/capability custody, authorization, and authoritative post-state before and after an explicitly authorized operation. A successful command, digest, or metadata object alone is not registration proof.
+Signed HTTP v3.1 adds a separate Leader context signature over the Tool FQN, deterministic invocation nonce, and Unix-millisecond timestamp, carried in `nexus-context-sig` and `nexus-context-timestamp`. It does not change the existing input/result signature bytes, `signed_http::v3` API, or `X-Nexus-Sig-V: 3` header value. Required Toolkit mode checks the allowlisted key and inclusive timestamp window, defaulting to 30 seconds, before replay-cache access; old v3 requests without context headers fail. Per-Tool `require_client_certificate` is optional and defaults to false; when enabled, the TLS peer key must match the allowlisted Leader key before replay-cache access or invocation. Toolkit `/meta` advertises HTTPS regardless of `X-Forwarded-Proto`; provide authenticated HTTPS, with Toolkit TLS termination or passthrough when client-certificate binding is enabled. Test tampering of both signature layers, stale timestamps, missing context headers, and replay locally. Registration is a shared-network mutation: verify exact FQN, schema, final endpoint/path, beneficiary, collateral, gas, signer/capability custody, authorization, and authoritative post-state before and after an explicitly authorized operation. A successful command, digest, or metadata object alone is not registration proof.
 
 ## Talus Vision links
 

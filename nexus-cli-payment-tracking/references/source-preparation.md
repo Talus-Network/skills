@@ -9,7 +9,7 @@ Set `SKILLS_BUNDLE_ROOT` to the installed bundle root and use `scripts/prepare_s
 The normal public bootstrap is:
 
 ```bash
-SOURCE_MANIFEST="$(python3 "$SKILLS_BUNDLE_ROOT/scripts/prepare_sources.py" prepare --only nexus-sdk --only nexus-move-packages --only sui --print-manifest-path)"
+SOURCE_MANIFEST="$(python3 "$SKILLS_BUNDLE_ROOT/scripts/prepare_sources.py" prepare --only nexus-sdk --repo nexus-sdk=c996eda4f125989cbec4f1cdc5d5e5235a558167 --checksum nexus-sdk=d273e64844b93efe5543200b2c0ae6fda3d49ee7e043a5046572ce74665d247f --only nexus-move-packages --only sui --print-manifest-path)"
 ```
 
 Install the cleanup trap before preparing the manifest. On normal exit or `INT`/`TERM`, call `python3 "$SOURCE_HELPER" cleanup --manifest "$SOURCE_MANIFEST"` exactly once when a manifest exists. Preserve the main command status; if cleanup fails after a successful operation, return the cleanup status and write the failure to stderr. The executable compatibility block in the entrypoint is deliberately small; this reference owns the surrounding explanation and evidence boundary.
@@ -25,6 +25,8 @@ python3 "$SKILLS_BUNDLE_ROOT/scripts/testnet_evidence.py" \
 Record the endpoint, network label, allowlisted methods, response digests, and collection time. An unavailable, malformed, or incomplete response is an evidence gap, never proof of payment settlement.
 
 ## Executable source preparation contract
+
+The preparation command explicitly pins the Nexus SDK v2.2.0 commit and archive checksum. If the installed companion helper rejects that pair, stop: source-based checks are unavailable through that companion until a compatible helper is published. Do not remove the guard or use a different SDK source. For ordinary integration, use the published crates and verified CLI from [Developer Setup](https://docs.talus.network/guides/getting-started/setup).
 
 ```bash
 SKILLS_BUNDLE_ROOT="${SKILLS_BUNDLE_ROOT:?Set SKILLS_BUNDLE_ROOT to this installed Skills bundle root}"
@@ -51,7 +53,7 @@ trap 'cleanup_sources 130' INT
 trap 'cleanup_sources 143' TERM
 source_prepare_status=0
 SOURCE_MANIFEST=""
-SOURCE_MANIFEST="$(python3 "$SOURCE_HELPER" prepare --only nexus-sdk --only nexus-move-packages --only sui --print-manifest-path)" || source_prepare_status=$?
+SOURCE_MANIFEST="$(python3 "$SOURCE_HELPER" prepare --only nexus-sdk --repo nexus-sdk=c996eda4f125989cbec4f1cdc5d5e5235a558167 --checksum nexus-sdk=d273e64844b93efe5543200b2c0ae6fda3d49ee7e043a5046572ce74665d247f --only nexus-move-packages --only sui --print-manifest-path)" || source_prepare_status=$?
 if [ "$source_prepare_status" -ne 0 ] || [ -z "$SOURCE_MANIFEST" ]; then
   SOURCE_MANIFEST=""
   if [ "$source_prepare_status" -eq 0 ]; then source_prepare_status=1; fi

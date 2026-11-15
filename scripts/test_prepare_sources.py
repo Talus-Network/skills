@@ -451,7 +451,7 @@ class PrepareSourcesTests(unittest.TestCase):
     def test_default_public_archive_checksums_are_reviewed(self) -> None:
         self.assertEqual(
             DEFAULT_REPOSITORIES["nexus-sdk"].archive_sha256,
-            "86309357d25e56172d84d83eb7f0add37082157cde94ba00439536d39bbcd5b3",
+            "d273e64844b93efe5543200b2c0ae6fda3d49ee7e043a5046572ce74665d247f",
         )
         self.assertEqual(
             DEFAULT_REPOSITORIES["nexus-move-packages"].archive_sha256,

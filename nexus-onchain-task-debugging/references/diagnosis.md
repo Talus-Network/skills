@@ -116,7 +116,7 @@ Resolve the exact versioned Tool FQN from the historical DAG, skill artifact, or
 
 Capture raw output/errors and exit status, collection time, CLI version/revision, network/endpoint, exact IDs, transaction effects/events, and result/payment evidence immediately. Testnet may prune execution history after only a few days, with no guaranteed retention interval. `history is incomplete: missing transaction …` prevents historical reconstruction; it does not establish a failed Execution or any root cause. Preserve timestamped saved evidence as historical, continue independent durable reads, and leave dependent cause rows unresolved. Current state cannot replace missing historical state.
 
-In v2.1.1, walks originate from DAG publication and Task scheduling, not `dag execute`. Scheduling requires `--prepay-amount-mist` and `--occurrence-budget-mist`; inspect the resulting reserve, budget, and separate native gas evidence rather than inferring funding from command success. Do not publish, schedule, refill, or rerun to complete this worksheet. A separately authorized new run is new evidence, not recovery of the old trace.
+In v2.2.0, walks originate from DAG publication and Task scheduling, not `dag execute`. Scheduling requires `--prepay-amount-mist` and `--occurrence-budget-mist`; inspect the resulting reserve, budget, and separate native gas evidence rather than inferring funding from command success. Do not publish, schedule, refill, or rerun to complete this worksheet. A separately authorized new run is new evidence, not recovery of the old trace.
 
 ## Correctness invariants
 

@@ -116,7 +116,7 @@ Publishing a package, registering a Tool, binding a skill, scheduling a Task, up
 
 ## Input files, references, and retained storage
 
-With CLI 2.1.1, `task create` and `task schedule` accept `--input-file PATH` instead of `--input-json`, repeatable `--input-ref VERTEX.PORT=FILE` to reuse saved Walrus references, and `--remote VERTEX.PORT` for wallet-funded uploads. `--remote-receipts DIR` saves per-port references and upload recovery records; reuse the directory to resume matching work. Check the published Setup authority and exact command help before using these flags.
+With CLI 2.2.0, `task create` and `task schedule` accept `--input-file PATH` instead of `--input-json`, repeatable `--input-ref VERTEX.PORT=FILE` to reuse saved Walrus references, and `--remote VERTEX.PORT` for wallet-funded uploads. `--remote-receipts DIR` saves per-port references and upload recovery records; reuse the directory to resume matching work. Check the published Setup authority and exact command help before using these flags.
 
 Reject conflicting input sources and validate the Task against its published DAG before new storage payment. The SDK's `TaskInputPlan` supplies preflight inputs, verifies existing references, and materializes selected uploads; call `Scheduler::preflight_task_inputs` before materialization. WAL storage payment and SUI transaction gas are separate from the Task reserve. Reference files remain useful if Task submission fails; they are not evidence that a Task exists. Keep the saved signed registration after an uncertain upload submission rather than purchasing storage again.
 

@@ -76,9 +76,11 @@ nexus tool validate offchain --url http://127.0.0.1:8080/weather
 
 Current validation requests `/health` and requires `200 OK`, fetches `/meta`, parses the FQN/URL/description/timeout/schemas, and rejects metadata without top-level `oneOf`. Independently review the final URL syntax and non-empty description before registration because live endpoint validation and registration metadata checks are separate paths. The custom Tool `path()` is part of the URL, so validation must target `/weather` here and the Tool's actual suffix in other projects; the `/health` and `/meta` routes are served below that base path. A successful local validation proves health and metadata compatibility; it does not exercise `POST /invoke` or prove canonical output encoding. Invoke and decode representative success/error outputs in the local tests described in [scaffolding](scaffolding.md).
 
-## 3. Configure signed HTTP v3 deliberately
+## 3. Configure signed HTTP v3.1 deliberately
 
-Signed HTTP v3 authenticates the canonical schema-ordered input commitment and canonical response bytes; it does not replace HTTPS. The Leader signs the 32-byte input hash. The Tool signs a domain-separated message containing the Leader signature, deterministic invocation nonce, and the SHA-256 of canonical response BCS. The current request headers are `X-Nexus-Sig-V`, `X-Nexus-Leader-Id`, `X-Nexus-Leader-Key-Id`, `X-Nexus-Input-Hash`, `X-Nexus-Leader-Signature`, and `X-Nexus-Nonce`; the response carries `X-Nexus-Sig-V` and, when configured, `X-Nexus-Tool-Signature`.
+Signed HTTP v3.1 adds a separate Leader context signature over the receiving Tool FQN, deterministic invocation nonce, and Unix-millisecond timestamp. It uses the new request headers `nexus-context-sig` and `nexus-context-timestamp`; it does not change the existing v3 input or result signature bytes, the `signed_http::v3` API, or the `X-Nexus-Sig-V: 3` header value. Required mode rejects old v3 requests that omit the context headers. HTTPS remains required.
+
+The Leader still signs the 32-byte schema-ordered input hash. The Tool still signs a domain-separated message containing the Leader signature, deterministic invocation nonce, and SHA-256 of canonical response BCS. The other request headers remain `X-Nexus-Sig-V`, `X-Nexus-Leader-Id`, `X-Nexus-Leader-Key-Id`, `X-Nexus-Input-Hash`, `X-Nexus-Leader-Signature`, and `X-Nexus-Nonce`; the response carries `X-Nexus-Sig-V` and, when configured, `X-Nexus-Tool-Signature`.
 
 The current Toolkit configuration is JSON with no top-level `version` field:
 
@@ -91,6 +93,8 @@ The current Toolkit configuration is JSON with no top-level `version` field:
     "tools": {
       "xyz.taluslabs.exchanges.coinbase.spot-price@1": {
         "response_signing_key": "<32-byte-ed25519-private-key>",
+        "context_timestamp_window_ms": 30000,
+        "require_client_certificate": false,
         "replay_cache_ttl_ms": 300000
       }
     }
@@ -98,7 +102,7 @@ The current Toolkit configuration is JSON with no top-level `version` field:
 }
 ```
 
-Current `SignedHttpMode` values are only `disabled` and `required`; an omitted `signed_http` section disables signed HTTP, while a present section defaults to required. Required mode needs one inline `allowed_leaders` object or one `allowed_leaders_path`, a nonempty `tools` map, and a positive replay TTL. `response_signing_key` is optional for request-verification-only service but required for the RegisteredKey result path. Do not add a top-level version, `tool_signing_key`, Tool KID field, method/path/query/body/time-window/status claims, or an external replay-store field from stale examples.
+`SignedHttpMode` remains `disabled` or `required`; an omitted `signed_http` section disables signed HTTP, while a present section defaults to required. Required mode needs one inline `allowed_leaders` object or one `allowed_leaders_path`, a nonempty `tools` map, and a positive replay TTL. `context_timestamp_window_ms` is an inclusive freshness window and defaults to 30,000 ms. `require_client_certificate` defaults to false; when enabled, the TLS peer key must match the allowlisted Leader key before replay-cache access or invocation, so the Toolkit must terminate TLS or receive the client certificate through TLS passthrough. `/meta` advertises HTTPS and ignores `X-Forwarded-Proto`; plain HTTP is served only when both TLS credential paths are absent. `response_signing_key` is optional for request-verification-only service but required for the RegisteredKey result path. Do not add a top-level version, `tool_signing_key`, Tool KID field, generic method/path/query/body/status signature claims, or an external replay-store field from stale examples.
 
 Export the active Leader allowlist through the read-only CLI path, using a temporary or operator-managed destination:
 
@@ -151,13 +155,13 @@ When a Tool is registered with the appropriate active key and the Tool owner sep
 
 In a local required-mode test, an unsigned `/invoke` must fail before input decoding, normally with `401` and an `auth_failed` JSON error. Exercise tampered/missing/wrong signatures with the current SDK v3 tests or a local fixture, never against production traffic. For an accepted staging workflow, retain Tool/key/Task/Occurrence/Execution readbacks, FQN/Tool ID, active key IDs, input hash, nonce context, canonical result evidence, transaction digest, and verifier decision. Local Leader logs are not an on-chain verdict.
 
-Live workflow proof is conditional on an explicitly requested and authorized run, not a prerequisite for implementing or locally validating the Tool. Follow the published [execution guide](https://docs.talus.network/guides/agent-usage/execute-and-settle-agent) and selected binary's help. Released v2.1.1 uses DAG publication then Task scheduling, not `dag execute`, and requires both `--prepay-amount-mist` and `--occurrence-budget-mist`. Keep approved Task funding separate from signer-owned SUI transaction gas. Save actual Task/Occurrence/Execution links; never assume Occurrence zero or infer completion/settlement from scheduling.
+Live workflow proof is conditional on an explicitly requested and authorized run, not a prerequisite for implementing or locally validating the Tool. Follow the published [execution guide](https://docs.talus.network/guides/agent-usage/execute-and-settle-agent) and selected binary's help. Released v2.2.0 uses DAG publication then Task scheduling, not `dag execute`, and requires both `--prepay-amount-mist` and `--occurrence-budget-mist`. Keep approved Task funding separate from signer-owned SUI transaction gas. Save actual Task/Occurrence/Execution links; never assume Occurrence zero or infer completion/settlement from scheduling.
 
 Capture the staging evidence above immediately, including raw output/errors and exit status, result/payment effects/events, CLI version/revision, network/endpoint, and collection time. Testnet may prune execution history after only a few days, with no guaranteed retention interval. `history is incomplete: missing transaction …` means unavailable historical evidence, not Tool failure or nonpayment. Continue independent durable reads and retain timestamped saved evidence without presenting it as a fresh historical verification. A separately authorized rerun produces new evidence; it does not recover the old execution.
 
 ## SDK and Toolkit consumer version boundary
 
-Use `nexus-sdk = "2.1.1"` or `nexus-toolkit = "2.1.1"` from the verified public release. The SDK's generated Move bindings are the ABI authority; the published binding libraries remain `talus-sui-move* = 0.3.0` with the release's Sui `0.4.0` type boundary. The CLI is a separately distributed release binary because `nexus-cli` is not a crates.io install target. Keep crate checks, CLI help, and on-chain deployment identity as separate evidence.
+`nexus-sdk = "2.2.0"` or `nexus-toolkit = "2.2.0"` from the verified public release. The SDK's generated Move bindings are the ABI authority; the published binding libraries remain `talus-sui-move* = 0.3.0` with the release's Sui `0.4.0` type boundary. The CLI is a separately distributed release binary because `nexus-cli` is not a crates.io install target. Keep crate checks, CLI help, and on-chain deployment identity as separate evidence.
 
 When a consumer reads a Tool or transaction, carry the selected object version and previous transaction through the readback and retain the transaction effects/events used to establish causality. Do not treat an `ObjectNotFound` read as an RPC outage, an `InvalidTransactionOutput` response as usable payment evidence, or bounded recent-activity discovery as proof that no older record exists.
 

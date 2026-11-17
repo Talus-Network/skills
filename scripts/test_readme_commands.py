@@ -127,7 +127,7 @@ class SkillsReadmeCommandTests(unittest.TestCase):
         text = README_PATH.read_text(encoding="utf-8")
         self.assertIn("https://" + "docs.talus.network/guides/getting-started/setup", text)
         self.assertIn("scripts/docs_website.py", text)
-        self.assertIn("--expected-version v2.1.1", text)
+        self.assertIn("--expected-version v2.2.0", text)
         self.assertIn("fails closed", text)
         website_source = (ROOT / "scripts/docs_website.py").read_text(encoding="utf-8")
         self.assertIn("CANONICAL_SETUP_URL", website_source)
@@ -149,11 +149,28 @@ class SkillsReadmeCommandTests(unittest.TestCase):
         args = helper._parser().parse_args(tokens[1:])
         self.assertEqual(args.command, "prepare")
         self.assertEqual(args.only, ["nexus-sdk", "nexus-move-packages", "sui"])
-        self.assertEqual(args.repo, [])
-        self.assertEqual(args.checksum, [])
-        names = [spec.logical_name for spec in helper._normalise_specs(None, {}, {}, args.only)]
+        self.assertEqual(
+            args.repo,
+            ["nexus-sdk=v2.2.0"],
+        )
+        self.assertEqual(
+            args.checksum,
+            ["nexus-sdk=a213e13580e060754acc3bdfe57ed6bde6f85ea5727b43a47cf2bd0e722d091f"],
+        )
+        specs = helper._normalise_specs(
+            None, helper._parse_repo_overrides(args.repo), helper._parse_checksums(args.checksum), args.only
+        )
+        names = [spec.logical_name for spec in specs]
         self.assertEqual(names, ["nexus-move-packages", "nexus-sdk", "sui"])
-        self.assertIn("--only nexus-sdk --only nexus-move-packages --only sui", prepare_line)
+        sdk = next(spec for spec in specs if spec.logical_name == "nexus-sdk")
+        self.assertEqual(sdk.archive_url, "https://codeload.github.com/Talus-Network/nexus-sdk/tar.gz/v2.2.0")
+        self.assertIn(
+            "--only nexus-sdk "
+            "--repo nexus-sdk=v2.2.0 "
+            "--checksum nexus-sdk=a213e13580e060754acc3bdfe57ed6bde6f85ea5727b43a47cf2bd0e722d091f "
+            "--only nexus-move-packages --only sui",
+            prepare_line,
+        )
         self.assertNotIn("prepare --print-manifest-path", block)
         self.assertEqual(args.only, ["nexus-sdk", "nexus-move-packages", "sui"])
         self.assertLess(block.index("trap cleanup_sources"), block.index("SDK_ROOT=", block.index("SOURCE_MANIFEST=")))
@@ -359,7 +376,18 @@ class SkillsReadmeCommandTests(unittest.TestCase):
                     self.assertFalse(continuation_path.exists(), (bootstrap_path, root_name))
                     root_calls = log_path.read_text(encoding="utf-8").splitlines()
                     self.assertEqual(sum(" prepare " in f" {call} " for call in root_calls), 1, (bootstrap_path, root_name))
-                    self.assertEqual(sum(f"--repo {root_name}" in call for call in root_calls), 1, (bootstrap_path, root_name))
+                    self.assertEqual(
+                        sum(
+                            " root " in f" {call} "
+                            and re.search(
+                                rf"(?:^|\s)--repo\s+{re.escape(root_name)}(?:\s|$)", call
+                            )
+                            is not None
+                            for call in root_calls
+                        ),
+                        1,
+                        (bootstrap_path, root_name),
+                    )
                     self.assertEqual(sum(" cleanup " in f" {call} " for call in root_calls), 1, (bootstrap_path, root_name))
                     self.assertNotIn("stale-root", failed_root.stderr, (bootstrap_path, root_name))
             environment.pop("FAIL_ROOT", None)

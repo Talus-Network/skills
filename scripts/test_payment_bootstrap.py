@@ -21,11 +21,13 @@ class PaymentBootstrapTests(unittest.TestCase):
             None,
         )
         self.assertIsNotNone(bootstrap)
-        normal_commands = re.findall(
-            r"prepare --only nexus-sdk --only nexus-move-packages --only sui --print-manifest-path",
-            bootstrap,
+        expected_prepare = (
+            "prepare --only nexus-sdk "
+            "--repo nexus-sdk=v2.2.0 "
+            "--checksum nexus-sdk=a213e13580e060754acc3bdfe57ed6bde6f85ea5727b43a47cf2bd0e722d091f "
+            "--only nexus-move-packages --only sui --print-manifest-path"
         )
-        self.assertEqual(len(normal_commands), 1)
+        self.assertEqual(bootstrap.count(expected_prepare), 1)
         self.assertNotIn("prepare --print-manifest-path", bootstrap)
         self.assertIn("testnet_evidence.py", text)
         self.assertIn("--graphql-url https://graphql.testnet.sui.io/graphql", text)

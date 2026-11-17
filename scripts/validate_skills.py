@@ -65,12 +65,12 @@ PUBLIC_GITHUB_REPOSITORIES = {
     "MystenLabs/sui",
 }
 APPROVED_PUBLIC_ARCHIVE_REFS = {
-    "Talus-Network/nexus-sdk": "08bfe76e726922ce512d623fbc1d2e1bd786bcd4",
+    "Talus-Network/nexus-sdk": "v2.2.0",
     "Talus-Network/nexus-move-packages": "b070517238b83dd607e7ef6134d3ac413fdcc01f",
     "MystenLabs/sui": "d8459684b41eb09ab23fe16a9dd84173270bbaba",
 }
 APPROVED_PUBLIC_ARCHIVE_SHA256 = {
-    "Talus-Network/nexus-sdk": "86309357d25e56172d84d83eb7f0add37082157cde94ba00439536d39bbcd5b3",
+    "Talus-Network/nexus-sdk": "a213e13580e060754acc3bdfe57ed6bde6f85ea5727b43a47cf2bd0e722d091f",
     "Talus-Network/nexus-move-packages": "e88c6b977e87847f441564ecb9bcb75c269c5214d640721684139e93ddaa32f2",
     "MystenLabs/sui": "1b974c1b10413e873b98df2740a877a930a08b40c80af58b52f737385f8bdf44",
 }

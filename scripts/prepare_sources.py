@@ -117,9 +117,9 @@ DEFAULT_REPOSITORIES: Mapping[str, RepositorySpec] = {
     "nexus-sdk": RepositorySpec(
         logical_name="nexus-sdk",
         repository=f"{OWNER}/nexus-sdk",
-        ref="08bfe76e726922ce512d623fbc1d2e1bd786bcd4",
+        ref="v2.2.0",
         required_paths=("Cargo.toml", "cli", "toolkit-rust"),
-        archive_sha256="86309357d25e56172d84d83eb7f0add37082157cde94ba00439536d39bbcd5b3",
+        archive_sha256="a213e13580e060754acc3bdfe57ed6bde6f85ea5727b43a47cf2bd0e722d091f",
     ),
     "nexus-move-packages": RepositorySpec(
         logical_name="nexus-move-packages",

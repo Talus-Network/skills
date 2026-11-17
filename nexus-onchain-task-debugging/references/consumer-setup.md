@@ -6,22 +6,23 @@ For ordinary CLI inspection, use the installed CLI and its `--help` directly. Re
 
 ## Prepare the public companion
 
-Requires Git, Python 3, anonymous HTTPS access, and a writable temporary directory. Run this block in the same Bash session as the subsequent helper commands. It fetches a fixed revision of the public Skills repository, not private implementation sources. Stop if any command fails; do not fall back to a guessed host checkout.
+Requires Git, Python 3, anonymous HTTPS access, and a writable temporary directory. Run this block in the same Bash session as the subsequent helper commands. It fetches the `v2.2.0` release tag of the public Skills repository. The matching tag must be published before this command can succeed. Stop if any command fails; do not fall back to a guessed host checkout.
 
 ```bash
+SKILLS_VERSION="v2.2.0"
 SKILLS_BUNDLE_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/nexus-skills-companion.XXXXXXXX")" &&
 git -C "$SKILLS_BUNDLE_ROOT" init -q &&
 git -C "$SKILLS_BUNDLE_ROOT" remote add origin https://github.com/Talus-Network/skills &&
-git -C "$SKILLS_BUNDLE_ROOT" fetch --depth 1 origin f28f0b03c771572430672c18ea27c92d27dbba98 &&
-git -C "$SKILLS_BUNDLE_ROOT" checkout --detach -q FETCH_HEAD &&
-test "$(git -C "$SKILLS_BUNDLE_ROOT" rev-parse HEAD)" = f28f0b03c771572430672c18ea27c92d27dbba98 &&
+git -C "$SKILLS_BUNDLE_ROOT" fetch --depth 1 origin "refs/tags/$SKILLS_VERSION:refs/tags/$SKILLS_VERSION" &&
+git -C "$SKILLS_BUNDLE_ROOT" checkout --detach -q "refs/tags/$SKILLS_VERSION" &&
+test "$(git -C "$SKILLS_BUNDLE_ROOT" rev-parse HEAD)" = "$(git -C "$SKILLS_BUNDLE_ROOT" rev-parse "refs/tags/$SKILLS_VERSION^{commit}")" &&
 test -f "$SKILLS_BUNDLE_ROOT/scripts/prepare_sources.py" &&
 test -f "$SKILLS_BUNDLE_ROOT/scripts/testnet_evidence.py" &&
 test -f "$SKILLS_BUNDLE_ROOT/scripts/docs_website.py" &&
 export SKILLS_BUNDLE_ROOT
 ```
 
-This revision supplies the companion executables; continue following the installed skill's current guidance for CLI use and evidence limitations. Resolve every repository-level `scripts/...` command below `$SKILLS_BUNDLE_ROOT`. TAP-specific `scripts/` and `fixtures/` paths resolve below `$SKILLS_BUNDLE_ROOT/nexus-tap-development`, even when those files are absent from the installed skill directory. Run unqualified companion commands from that checkout, or use the explicit absolute path.
+This release supplies the companion executables; continue following the installed skill's current guidance for CLI use and evidence limitations. Resolve every repository-level `scripts/...` command below `$SKILLS_BUNDLE_ROOT`. TAP-specific `scripts/` and `fixtures/` paths resolve below `$SKILLS_BUNDLE_ROOT/nexus-tap-development`, even when those files are absent from the installed skill directory. Run unqualified companion commands from that checkout, or use the explicit absolute path.
 
 Keep the companion checkout for subsequent gates. The source-preparation reference's manifest cleanup removes only the downloaded source workspace, not this companion checkout. Record the temporary checkout path; remove it when no remaining gate needs it. If fetching is unavailable, report the helper/fixture gate as blocked and continue applicable direct CLI or Docs reads.
 

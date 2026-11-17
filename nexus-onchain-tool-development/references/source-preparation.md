@@ -12,7 +12,7 @@ Use the published Setup authority for version-sensitive commands and the release
 
 ## Executable source preparation contract
 
-The preparation command explicitly pins the Nexus SDK v2.2.0 commit and archive checksum. If the installed companion helper rejects that pair, stop: source-based checks are unavailable through that companion until a compatible helper is published. Do not remove the guard or use a different SDK source. For ordinary integration, use the published crates and verified CLI from [Developer Setup](https://docs.talus.network/guides/getting-started/setup).
+The preparation command selects the Nexus SDK `v2.2.0` release tag and pins its archive checksum. If the installed companion helper rejects that pair, stop: source-based checks are unavailable through that companion until a compatible helper is published. Do not remove the guard or use a different SDK source. For ordinary integration, use the published crates and verified CLI from [Developer Setup](https://docs.talus.network/guides/getting-started/setup).
 
 ```bash
 SKILLS_BUNDLE_ROOT="${SKILLS_BUNDLE_ROOT:?Set SKILLS_BUNDLE_ROOT to this installed Skills bundle root}"
@@ -39,7 +39,7 @@ trap 'cleanup_sources 130' INT
 trap 'cleanup_sources 143' TERM
 source_prepare_status=0
 SOURCE_MANIFEST=""
-SOURCE_MANIFEST="$(python3 "$SOURCE_HELPER" prepare --only nexus-sdk --repo nexus-sdk=c996eda4f125989cbec4f1cdc5d5e5235a558167 --checksum nexus-sdk=d273e64844b93efe5543200b2c0ae6fda3d49ee7e043a5046572ce74665d247f --only nexus-move-packages --only sui --print-manifest-path)" || source_prepare_status=$?
+SOURCE_MANIFEST="$(python3 "$SOURCE_HELPER" prepare --only nexus-sdk --repo nexus-sdk=v2.2.0 --checksum nexus-sdk=a213e13580e060754acc3bdfe57ed6bde6f85ea5727b43a47cf2bd0e722d091f --only nexus-move-packages --only sui --print-manifest-path)" || source_prepare_status=$?
 if [ "$source_prepare_status" -ne 0 ] || [ -z "$SOURCE_MANIFEST" ]; then
   SOURCE_MANIFEST=""
   if [ "$source_prepare_status" -eq 0 ]; then source_prepare_status=1; fi

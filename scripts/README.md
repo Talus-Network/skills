@@ -52,7 +52,7 @@ Replay accepts only the recorded evidence boundary. Every `bundled:` source must
 
 ## Public source preparation
 
-`prepare_sources.py` creates a disposable manifest-backed workspace and downloads only three reviewed anonymous public GitHub archives over HTTPS. The Nexus SDK source is pinned to release commit `c996eda4f125989cbec4f1cdc5d5e5235a558167` with archive SHA-256 `d273e64844b93efe5543200b2c0ae6fda3d49ee7e043a5046572ce74665d247f`; the Nexus Move Packages and Sui pins remain separately reviewed, including Sui revision `d8459684b41eb09ab23fe16a9dd84173270bbaba` for installed `sui 1.78.0-d8459684b41e`. Archive identity, exact refs/checksums, required paths, extracted-tree digests, and cleanup ownership are recorded in the manifest. The helper never searches the host filesystem for a source tree.
+`prepare_sources.py` creates a disposable manifest-backed workspace and downloads only three reviewed anonymous public GitHub archives over HTTPS. The Nexus SDK source is pinned to release tag `v2.2.0` with archive SHA-256 `a213e13580e060754acc3bdfe57ed6bde6f85ea5727b43a47cf2bd0e722d091f`; the Nexus Move Packages and Sui pins remain separately reviewed, including Sui revision `d8459684b41eb09ab23fe16a9dd84173270bbaba` for installed `sui 1.78.0-d8459684b41e`. Archive identity, exact refs/checksums, required paths, extracted-tree digests, and cleanup ownership are recorded in the manifest. The helper never searches the host filesystem for a source tree.
 
 ```bash
 SOURCE_MANIFEST=""

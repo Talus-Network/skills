@@ -151,18 +151,23 @@ class SkillsReadmeCommandTests(unittest.TestCase):
         self.assertEqual(args.only, ["nexus-sdk", "nexus-move-packages", "sui"])
         self.assertEqual(
             args.repo,
-            ["nexus-sdk=c996eda4f125989cbec4f1cdc5d5e5235a558167"],
+            ["nexus-sdk=v2.2.0"],
         )
         self.assertEqual(
             args.checksum,
-            ["nexus-sdk=d273e64844b93efe5543200b2c0ae6fda3d49ee7e043a5046572ce74665d247f"],
+            ["nexus-sdk=a213e13580e060754acc3bdfe57ed6bde6f85ea5727b43a47cf2bd0e722d091f"],
         )
-        names = [spec.logical_name for spec in helper._normalise_specs(None, {}, {}, args.only)]
+        specs = helper._normalise_specs(
+            None, helper._parse_repo_overrides(args.repo), helper._parse_checksums(args.checksum), args.only
+        )
+        names = [spec.logical_name for spec in specs]
         self.assertEqual(names, ["nexus-move-packages", "nexus-sdk", "sui"])
+        sdk = next(spec for spec in specs if spec.logical_name == "nexus-sdk")
+        self.assertEqual(sdk.archive_url, "https://codeload.github.com/Talus-Network/nexus-sdk/tar.gz/v2.2.0")
         self.assertIn(
             "--only nexus-sdk "
-            "--repo nexus-sdk=c996eda4f125989cbec4f1cdc5d5e5235a558167 "
-            "--checksum nexus-sdk=d273e64844b93efe5543200b2c0ae6fda3d49ee7e043a5046572ce74665d247f "
+            "--repo nexus-sdk=v2.2.0 "
+            "--checksum nexus-sdk=a213e13580e060754acc3bdfe57ed6bde6f85ea5727b43a47cf2bd0e722d091f "
             "--only nexus-move-packages --only sui",
             prepare_line,
         )

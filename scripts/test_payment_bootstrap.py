@@ -23,8 +23,8 @@ class PaymentBootstrapTests(unittest.TestCase):
         self.assertIsNotNone(bootstrap)
         expected_prepare = (
             "prepare --only nexus-sdk "
-            "--repo nexus-sdk=c996eda4f125989cbec4f1cdc5d5e5235a558167 "
-            "--checksum nexus-sdk=d273e64844b93efe5543200b2c0ae6fda3d49ee7e043a5046572ce74665d247f "
+            "--repo nexus-sdk=v2.2.0 "
+            "--checksum nexus-sdk=a213e13580e060754acc3bdfe57ed6bde6f85ea5727b43a47cf2bd0e722d091f "
             "--only nexus-move-packages --only sui --print-manifest-path"
         )
         self.assertEqual(bootstrap.count(expected_prepare), 1)
